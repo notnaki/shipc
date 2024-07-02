@@ -1,12 +1,13 @@
 struct Hey{
-    M_field : string;
-    M_f : int;
+    i :int;
 }
 
-
 fn main() int {
-    let x:Hey = new Hey{"hey", 20};
-    printf("%s",x.M_field);
+
+    let x:[1]Hey = { new Hey{10} };
+
+    printf("%i", x[0].i);
+    #printf("%i",x.i);
 
     return 0;
 }

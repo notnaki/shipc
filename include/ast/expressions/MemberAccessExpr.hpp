@@ -10,16 +10,19 @@ private:
     std::unique_ptr<Expression> structExpr;
 
 public:
-    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName) {}
+    mutable std::string sName;
+    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName), sName("") {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
         llvm::Value *structVal = structExpr->codegen(cc);
 
-        std::string structName = structVal->getType()->getStructName().str();
-        // unsigned idx = cc.getTable().getStructMemberIdx(structName, member);
+        unsigned idx;
 
-        llvm::Value *extractedElement = cc.getBuilder().CreateExtractValue(structVal, {0}, "mem_access");
+        sName = structVal->getType()->getStructName().str();
+        idx = cc.getTable().getStructMemberIdx(sName, member);
+
+        llvm::Value *extractedElement = cc.getBuilder().CreateExtractValue(structVal, {idx}, "mem_access");
 
         return extractedElement;
     }

@@ -31,11 +31,11 @@ public:
         }
         else
         {
-            llvm::Type *varType = cc.getTable().getElementType(name);
+            // llvm::Type *varType = cc.getTable().getElementType(name);
 
-            llvm::Value *varValue = cc.getBuilder().CreateLoad(varType, var, name + ".value");
-            // return cc.getTable().getElementValue(name);
-            return varValue;
+            // llvm::Value *varValue = cc.getBuilder().CreateLoad(varType, var, name + ".value");
+            return cc.getTable().getElementValue(name);
+            // return varValue;
         }
     }
 };

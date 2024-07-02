@@ -38,6 +38,13 @@ public:
             continue;
         }
 
+        unsigned int numStructElements = structType->getNumElements();
+
+        while (elementValues.size() < numStructElements)
+        {
+            elementValues.push_back(llvm::Constant::getNullValue(structType->getElementType(elementValues.size())));
+        }
+
         return llvm::ConstantStruct::get(structType, elementValues);
     }
 };

@@ -8,13 +8,16 @@ Program Parser::Parse()
         {TokenKind::DOUBLE_NUMBER, &Parser::parse_double_expr},
         {TokenKind::STRING, &Parser::parse_string_expr},
         {TokenKind::IDENTIFIER, &Parser::parse_symbol_expr},
-        {TokenKind::OPEN_CURLY, &Parser::parse_array_expr}
+        {TokenKind::OPEN_CURLY, &Parser::parse_array_expr},
+        {TokenKind::NEW, &Parser::parse_struct_expr}
 
     };
 
     led_lu = {
         {TokenKind::OPEN_PAREN, &Parser::parse_call_expr},
         {TokenKind::OPEN_BRACKET, &Parser::parse_array_access_expr},
+
+        {TokenKind::DOT, &Parser::parse_member_access_expr},
 
         {TokenKind::PLUS, &Parser::parse_binary_expr},
         {TokenKind::DASH, &Parser::parse_binary_expr},
@@ -29,6 +32,7 @@ Program Parser::Parse()
         // {TokenKind::DASH, BindingPower::Additive},
         {TokenKind::OPEN_PAREN, BindingPower::Call},
         {TokenKind::OPEN_BRACKET, BindingPower::Member},
+        {TokenKind::DOT, BindingPower::Member},
 
         {TokenKind::STAR, BindingPower::Multiplicative},
         {TokenKind::SLASH, BindingPower::Multiplicative},

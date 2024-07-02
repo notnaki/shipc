@@ -18,17 +18,6 @@ void Shipc::exec()
     cc.save("out.ll");
 }
 
-void Shipc::setupExernFunctions()
-{
-
-    auto bytePtrTy = cc.getBuilder().getInt8Ty()->getPointerTo();
-    cc.getModule().getOrInsertFunction("printf",
-                                       llvm::FunctionType::get(
-                                           /*return type*/ cc.getBuilder().getInt32Ty(),
-                                           /*format arg*/ bytePtrTy,
-                                           /*vararg*/ true));
-}
-
 std::string Shipc::replace_escape_sequences(const std::string &input)
 {
     std::string result;

@@ -91,6 +91,53 @@ std::unique_ptr<Expression> Parser::parse_array_expr()
     return std::make_unique<ArrayExpr>(std::move(elements));
 }
 
+std::unique_ptr<Expression> Parser::parse_struct_expr()
+{
+    expect(TokenKind::NEW);
+    llvm::Type *t = parse_type();
+
+    llvm::StructType *structType = llvm::dyn_cast<llvm::StructType>(t);
+    if (!structType)
+    {
+        throw std::runtime_error("Type is not a struct type");
+    }
+
+    expect(TokenKind::OPEN_CURLY);
+
+    std::vector<std::unique_ptr<Expression>> elements;
+
+    while (currentTokenKind() != TokenKind::CLOSE_CURLY)
+    {
+        auto e = parse_expr(BindingPower::Logical);
+        if (!e)
+        {
+            throw std::runtime_error("Failed to parse expression in array initializer.");
+        }
+
+        elements.push_back(std::move(e));
+
+        if (currentTokenKind() == TokenKind::COMMA)
+        {
+            expect(TokenKind::COMMA);
+        }
+        else if (currentTokenKind() != TokenKind::CLOSE_CURLY)
+        {
+            throw std::runtime_error("Expected ',' or '}' in array expression.");
+        }
+    }
+
+    expect(TokenKind::CLOSE_CURLY);
+
+    if (elements.empty())
+    {
+        throw std::runtime_error("Array cannot be empty.");
+    }
+
+    auto structExpr = std::make_unique<StructExpr>(structType, std::move(elements));
+
+    return structExpr;
+}
+
 std::unique_ptr<Expression> Parser::parse_call_expr(std::unique_ptr<Expression> left)
 {
     std::string callFNName;
@@ -158,6 +205,16 @@ std::unique_ptr<Expression> Parser::parse_binary_expr(std::unique_ptr<Expression
 
     auto binaryExpr = std::make_unique<BinaryExpr>(std::move(left), std::move(right), op);
     return binaryExpr;
+}
+
+std::unique_ptr<Expression> Parser::parse_member_access_expr(std::unique_ptr<Expression> left)
+{
+    expect(TokenKind::DOT);
+
+    std::string memberName = expect(TokenKind::IDENTIFIER).value;
+    auto memberAccessExpr = std::make_unique<MemberAccessExpr>(std::move(left), memberName);
+
+    return memberAccessExpr;
 }
 
 std::vector<std::unique_ptr<Expression>> Parser::parse_call_arguments()

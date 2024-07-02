@@ -1,14 +1,14 @@
-
-fn a() int {
-    let x: [1]int = {20};
-    return x[0];
+struct Hey{
+    M_field : string;
+    M_f : int;
 }
 
+
 fn main() int {
-    let f:int = a();
-    let x:int = 10;
-    printf("%i",x+f);
-    return x+f;
+    let x:Hey = new Hey{"hey", 20};
+    printf("%s",x.M_field);
+
+    return 0;
 }
 
 

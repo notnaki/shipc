@@ -13,6 +13,9 @@ std::unique_ptr<Statement> Parser::parse_stmt()
     case TokenKind::LET:
         return parse_var_decl_stmt();
 
+    case TokenKind::STRUCT:
+        return parse_struct_decl_stmt();
+
     default:
         return parse_expr_stmt();
     }
@@ -104,6 +107,53 @@ std::unique_ptr<Statement> Parser::parse_var_decl_stmt()
     auto varDeclStmt = std::make_unique<VarDeclStmt>(varName, explicitType, std::move(value));
     return varDeclStmt;
 }
+
+std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
+{
+    // TODO add to parse_type symboltype
+    expect(TokenKind::STRUCT);
+
+    std::vector<llvm::Type *> memberTypes;
+    std::unordered_map<std::string, llvm::Type *> props;
+    std::unordered_map<std::string, unsigned> memberMap;
+
+    std::string structName = expect(TokenKind::IDENTIFIER).value;
+
+    expect(TokenKind::OPEN_CURLY);
+
+    unsigned idx = 0;
+    while (currentTokenKind() != TokenKind::CLOSE_CURLY && hasTokens())
+    {
+        std::string propName = expect(TokenKind::IDENTIFIER).value;
+        expectError(TokenKind::COLON, "Expected to find colon following property name inside struct declaration");
+
+        llvm::Type *propType = parse_type();
+
+        expect(TokenKind::SEMI_COLON);
+
+        if (props[propName] != nullptr)
+        {
+            throw std::runtime_error("Property " + propName + " has already been defined in struct declaration");
+        }
+
+        memberTypes.push_back(propType);
+        props[propName] = propType;
+        memberMap[propName] = idx;
+        ++idx;
+    }
+
+    expect(TokenKind::CLOSE_CURLY);
+
+    llvm::StructType *structType = llvm::StructType::create(cc.getContext(), memberTypes, structName);
+    cc.getTable().addStructType(structName, structType);
+    cc.getTable().addStructMemberMap(structName, memberMap);
+
+    auto structDeclStmt = std::make_unique<StructDeclStmt>();
+
+    return structDeclStmt;
+}
+
+// |----- Helpers -----|
 
 std::vector<std::pair<std::string, llvm::Type *>> Parser::parse_fn_params()
 {

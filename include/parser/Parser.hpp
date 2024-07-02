@@ -20,6 +20,7 @@
 #include "ast/statements/ExprStmt.hpp"
 #include "ast/statements/ReturnStmt.hpp"
 #include "ast/statements/VarDeclStmt.hpp"
+#include "ast/statements/StructDeclStmt.hpp"
 
 #include "ast/expressions/Expression.hpp"
 #include "ast/expressions/IntegerExpr.hpp"
@@ -27,9 +28,11 @@
 #include "ast/expressions/DoubleExpr.hpp"
 #include "ast/expressions/StringExpr.hpp"
 #include "ast/expressions/ArrayExpr.hpp"
+#include "ast/expressions/StructExpr.hpp"
 #include "ast/expressions/CallExpr.hpp"
 #include "ast/expressions/BinaryExpr.hpp"
 #include "ast/expressions/ArrayAccessExpr.hpp"
+#include "ast/expressions/MemberAccessExpr.hpp"
 
 class Parser
 {
@@ -66,6 +69,7 @@ private:
     std::unique_ptr<Statement> parse_fn_decl_stmt();
     std::unique_ptr<Statement> parse_return_stmt();
     std::unique_ptr<Statement> parse_var_decl_stmt();
+    std::unique_ptr<Statement> parse_struct_decl_stmt();
 
     std::vector<std::pair<std::string, llvm::Type *>> parse_fn_params();
 
@@ -78,8 +82,10 @@ private:
     std::unique_ptr<Expression> parse_string_expr();
     std::unique_ptr<Expression> parse_symbol_expr();
     std::unique_ptr<Expression> parse_array_expr();
+    std::unique_ptr<Expression> parse_struct_expr();
     std::unique_ptr<Expression> parse_call_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_array_access_expr(std::unique_ptr<Expression> left);
+    std::unique_ptr<Expression> parse_member_access_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_binary_expr(std::unique_ptr<Expression> left);
 
     std::vector<std::unique_ptr<Expression>> parse_call_arguments();

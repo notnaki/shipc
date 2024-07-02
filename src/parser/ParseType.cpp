@@ -7,7 +7,6 @@ llvm::Type *Parser::parse_type()
     switch (tokenKind)
     {
     case TokenKind::IDENTIFIER:
-        /* code */
         return parse_symbol_type();
     case TokenKind::OPEN_BRACKET:
         return parse_array_type();
@@ -27,7 +26,26 @@ llvm::Type *Parser::parse_symbol_type()
         {"void", llvm::Type::getVoidTy(cc.getContext())},
     };
 
-    return typesMap.at(expect(TokenKind::IDENTIFIER).value);
+    std::string typeName = expect(TokenKind::IDENTIFIER).value;
+
+    auto it = typesMap.find(typeName);
+    if (it != typesMap.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        auto structType = cc.getTable().getStructType(typeName);
+
+        if (structType)
+        {
+            return structType;
+        }
+        else
+        {
+            throw std::runtime_error("struct not found");
+        }
+    }
 }
 
 llvm::Type *Parser::parse_array_type()

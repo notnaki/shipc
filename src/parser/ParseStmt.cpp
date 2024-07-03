@@ -121,6 +121,9 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
 
     expect(TokenKind::OPEN_CURLY);
 
+    llvm::StructType *structType = llvm::StructType::create(cc.getContext(), structName);
+    cc.getTable().addStructType(structName, structType);
+
     unsigned idx = 0;
     while (currentTokenKind() != TokenKind::CLOSE_CURLY && hasTokens())
     {
@@ -128,6 +131,14 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
         expectError(TokenKind::COLON, "Expected to find colon following property name inside struct declaration");
 
         llvm::Type *propType = parse_type();
+
+        if (propType->isStructTy())
+        {
+            if (propType->getStructName() == structName)
+            {
+                propType = propType->getPointerTo();
+            }
+        }
 
         expect(TokenKind::SEMI_COLON);
 
@@ -143,8 +154,8 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
     }
 
     expect(TokenKind::CLOSE_CURLY);
+    structType->setBody(memberTypes);
 
-    llvm::StructType *structType = llvm::StructType::create(cc.getContext(), memberTypes, structName);
     cc.getTable().addStructType(structName, structType);
     cc.getTable().addStructMemberMap(structName, memberMap);
 

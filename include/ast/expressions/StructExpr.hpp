@@ -17,35 +17,32 @@ public:
         llvm::IRBuilder<> &builder = cc.getBuilder();
         llvm::LLVMContext &context = cc.getContext();
 
-        std::vector<llvm::Constant *> elementValues;
+        std::vector<llvm::Value *> elementValues;
         for (const auto &element : elements)
         {
-
             llvm::Value *elementValue = element->codegen(cc);
             if (!elementValue)
             {
                 throw std::runtime_error("Element value can't be null");
             }
 
-            llvm::Constant *constantValue = llvm::dyn_cast<llvm::Constant>(elementValue);
-            if (!constantValue)
-            {
-                throw std::runtime_error("Non-constant initialization not supported in array initialization.");
-                return nullptr;
-            }
-
-            elementValues.push_back(constantValue);
-            continue;
+            elementValues.push_back(elementValue);
         }
 
-        unsigned int numStructElements = structType->getNumElements();
-
-        while (elementValues.size() < numStructElements)
+        for (size_t i = elements.size(); i < structType->getStructNumElements(); ++i)
         {
-            elementValues.push_back(llvm::Constant::getNullValue(structType->getElementType(elementValues.size())));
+            elementValues.push_back(llvm::Constant::getNullValue(structType->getElementType(i)));
         }
 
-        return llvm::ConstantStruct::get(structType, elementValues);
+        // Create a struct pointer (GEP instruction)
+        llvm::Value *structPtr = builder.CreateAlloca(structType, nullptr, "struct_ptr");
+        for (size_t i = 0; i < elementValues.size(); ++i)
+        {
+            llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structPtr, i, "f");
+            builder.CreateStore(elementValues[i], fieldPtr);
+        }
+
+        return structPtr;
     }
 };
 

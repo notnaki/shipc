@@ -29,8 +29,11 @@ public:
 
             llvm::Value *value = initialValue->codegen(cc);
             cc.getTable().addElement(varName, value, expectedType);
+            if (expectedType->isStructTy())
+            {
+            }
 
-            if (expectedType->isArrayTy())
+            else if (expectedType->isArrayTy())
             {
 
                 std::string actualTypeStr;

@@ -1,13 +1,16 @@
 struct Hey{
+    s: string;
     i :int;
+    h: Hey;
 }
 
 fn main() int {
 
-    let x:[1]Hey = { new Hey{10} };
+    let f:Hey = new Hey{"b",20};
+    let x: Hey = new Hey{"a",10, f};
+    
 
-    printf("%i", x[0].i);
-    #printf("%i",x.i);
+    printf("%i, %s",x.i, x.h.s);
 
     return 0;
 }

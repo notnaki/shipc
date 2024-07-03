@@ -15,14 +15,18 @@ public:
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
-        llvm::Value *structVal = structExpr->codegen(cc);
+        llvm::IRBuilder<> &builder = cc.getBuilder();
 
-        unsigned idx;
+        // Get the struct pointer
+        llvm::Value *structPtr = structExpr->codegen(cc);
 
-        sName = structVal->getType()->getStructName().str();
-        idx = cc.getTable().getStructMemberIdx(sName, member);
+        // Access the member using GEP
+        llvm::Type *structType = cc.getTable().getStructType("Hey");
+        unsigned idx = cc.getTable().getStructMemberIdx("Hey", member);
+        llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structPtr, idx, "field_ptr");
 
-        llvm::Value *extractedElement = cc.getBuilder().CreateExtractValue(structVal, {idx}, "mem_access");
+        // Load the member value
+        llvm::Value *extractedElement = builder.CreateLoad(fieldPtr->getType(), fieldPtr, "mem_access");
 
         return extractedElement;
     }

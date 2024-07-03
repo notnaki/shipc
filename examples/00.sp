@@ -24,7 +24,7 @@ fn main() int {
     printf("Hey2.Hey1.Hey.int:%i", m_hey2.m_hey1.m_hey.m_int);
 
     let x: Hey =m_hey2.m_hey1.m_hey;
-    let f:Hey = m_hey2.m_hey1;
+    let f:Hey1 = m_hey2.m_hey1;
     let c:Hey = f.m_hey;
     let n:Hey = c;
 

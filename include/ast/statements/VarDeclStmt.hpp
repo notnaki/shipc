@@ -7,6 +7,7 @@
 
 #include "Statement.hpp"
 #include "ast/expressions/Expression.hpp"
+#include "ast/expressions/MemberAccessExpr.hpp"
 
 class VarDeclStmt : public Statement
 {
@@ -30,8 +31,64 @@ public:
             llvm::Value *value = initialValue->codegen(cc);
             cc.getTable().addElement(varName, value, expectedType);
 
-            if (expectedType->isStructTy())
+            auto mi = dynamic_cast<MemberAccessExpr *>(initialValue.get());
+
+            if (mi)
             {
+
+                unsigned index = cc.getTable().getStructMemberIdx(mi->structType->getStructName().str(), mi->mName);
+
+                std::string actualTypeStr;
+                llvm::raw_string_ostream actualTypeStream(actualTypeStr);
+                mi->structType->getStructElementType(index)->print(actualTypeStream);
+
+                std::string expectedTypeStr;
+                llvm::raw_string_ostream expectedTypeStream(expectedTypeStr);
+                expectedType->print(expectedTypeStream);
+
+                if (expectedTypeStr != actualTypeStr)
+                {
+
+                    llvm::errs() << "Error: Initial value type mismatch for variable '" << varName << "'.\n";
+                    llvm::errs() << "Expected type: " << expectedTypeStr << "\n";
+                    llvm::errs() << "Actual type: " << actualTypeStr << "\n";
+
+                    throw std::runtime_error("Initial value type mismatch for variable '" + varName + "'");
+                }
+                cc.getTable().addElement(varName, allocaInst, expectedType);
+                cc.getBuilder().CreateStore(value, allocaInst);
+                return;
+            }
+
+            else if (expectedType->isStructTy())
+            {
+                llvm::Type *getType;
+                auto al = llvm::dyn_cast<llvm::AllocaInst>(value);
+                if (al)
+                {
+                    getType = al->getAllocatedType();
+                }
+
+                std::string actualTypeStr;
+                llvm::raw_string_ostream actualTypeStream(actualTypeStr);
+                getType->print(actualTypeStream);
+
+                std::string expectedTypeStr;
+                llvm::raw_string_ostream expectedTypeStream(expectedTypeStr);
+                expectedType->print(expectedTypeStream);
+
+                if (expectedTypeStr != actualTypeStr)
+                {
+
+                    llvm::errs() << "Error: Initial value type mismatch for variable '" << varName << "'.\n";
+                    llvm::errs() << "Expected type: " << expectedTypeStr << "\n";
+                    llvm::errs() << "Actual type: " << actualTypeStr << "\n";
+
+                    throw std::runtime_error("Initial value type mismatch for variable '" + varName + "'");
+                }
+
+                cc.getBuilder().CreateStore(value, allocaInst);
+                return;
             }
 
             else if (expectedType->isArrayTy())

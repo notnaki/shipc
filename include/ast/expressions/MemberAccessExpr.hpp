@@ -25,6 +25,10 @@ public:
         if (al)
         {
             structType = al->getAllocatedType();
+            if (!al->getName().empty())
+            {
+                structVal = builder.CreateLoad(structVal->getType(), structVal, "l");
+            }
         }
         else
         {
@@ -43,6 +47,7 @@ public:
             }
             else
             {
+
                 throw std::runtime_error("Nested member types can only be called when nested");
             }
         }

@@ -41,7 +41,7 @@ public:
         }
 
         // Create a struct pointer (GEP instruction)
-        llvm::AllocaInst *structPtr = builder.CreateAlloca(structType, nullptr, "struct_ptr");
+        llvm::AllocaInst *structPtr = builder.CreateAlloca(structType, nullptr, "");
         for (size_t i = 0; i < elementValues.size(); ++i)
         {
             llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structPtr, i, "f");

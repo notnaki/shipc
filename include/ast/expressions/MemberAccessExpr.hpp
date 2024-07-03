@@ -10,22 +10,47 @@ private:
     std::unique_ptr<Expression> structExpr;
 
 public:
-    mutable std::string sName;
-    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName), sName("") {}
+    mutable std::string mName;
+    mutable llvm::Type *structType;
+
+    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName), mName(memberName) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
         llvm::IRBuilder<> &builder = cc.getBuilder();
 
-        // Get the struct pointer
-        llvm::Value *structPtr = structExpr->codegen(cc);
+        llvm::Value *structVal = structExpr->codegen(cc);
 
-        // Access the member using GEP
-        llvm::Type *structType = cc.getTable().getStructType("Hey");
-        unsigned idx = cc.getTable().getStructMemberIdx("Hey", member);
-        llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structPtr, idx, "field_ptr");
+        auto al = llvm::dyn_cast<llvm::AllocaInst>(structVal);
+        if (al)
+        {
+            structType = al->getAllocatedType();
+        }
+        else
+        {
+            auto mi = dynamic_cast<MemberAccessExpr *>(structExpr.get());
+            if (mi)
+            {
+                unsigned index = cc.getTable().getStructMemberIdx(mi->structType->getStructName().str(), mi->mName);
+                if (mi->structType->getStructElementType(index)->isStructTy())
+                {
+                    structType = mi->structType->getStructElementType(index);
+                }
+                else
+                {
+                    structType = mi->structType;
+                }
+            }
+            else
+            {
+                throw std::runtime_error("Nested member types can only be called when nested");
+            }
+        }
 
-        // Load the member value
+        unsigned idx = cc.getTable().getStructMemberIdx(structType->getStructName().str(), member);
+
+        llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structVal, idx, "field_ptr");
+
         llvm::Value *extractedElement = builder.CreateLoad(fieldPtr->getType(), fieldPtr, "mem_access");
 
         return extractedElement;

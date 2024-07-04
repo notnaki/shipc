@@ -11,6 +11,7 @@
 class FuncDeclStmt : public Statement
 {
 private:
+    std::string structName;
     std::string functionName;
     std::vector<std::pair<std::string, llvm::Type *>> parameters;
     llvm::Type *returnType;
@@ -18,8 +19,18 @@ private:
 
 public:
     FuncDeclStmt(const std::string &name, const std::vector<std::pair<std::string, llvm::Type *>> &params, llvm::Type *returnTy, std::unique_ptr<BlockStmt> bodyPtr)
-        : functionName(name), parameters(params), returnType(returnTy), body(std::move(bodyPtr))
+        : functionName(name), structName(""), parameters(params), returnType(returnTy), body(std::move(bodyPtr))
     {
+    }
+
+    std::string getName()
+    {
+        return functionName;
+    }
+
+    void setStructName(std::string name)
+    {
+        structName = name;
     }
 
     void codegen(CompilerContext &cc) const override
@@ -31,7 +42,7 @@ public:
         }
 
         llvm::FunctionType *funcType = llvm::FunctionType::get(returnType, paramTypes, false);
-        llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, functionName, cc.getModule());
+        llvm::Function *func = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, structName + functionName, cc.getModule());
 
         auto argIt = func->arg_begin();
         for (size_t i = 0; i < parameters.size(); ++i, ++argIt)

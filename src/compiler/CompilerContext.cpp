@@ -19,4 +19,10 @@ void CompilerContext::setupExternalFunctions()
                                    /*return type*/ builder.getInt32Ty(),
                                    /*format arg*/ bytePtrTy,
                                    /*vararg*/ true));
+
+    module.getOrInsertFunction("strcmp",
+                               llvm::FunctionType::get(
+                                   builder.getInt32Ty(),                             // return type
+                                   {builder.getInt8PtrTy(), builder.getInt8PtrTy()}, // parameter types
+                                   false));
 }

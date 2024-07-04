@@ -7,58 +7,27 @@ class MemberAccessExpr : public Expression
 {
 private:
     std::string member;
-    std::unique_ptr<Expression> structExpr;
 
 public:
-    mutable std::string mName;
+    std::unique_ptr<Expression> structExpr;
     mutable llvm::Type *structType;
 
-    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName), mName(memberName) {}
+    MemberAccessExpr(std::unique_ptr<Expression> left, std::string memberName) : structExpr(std::move(left)), member(memberName) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
-        llvm::IRBuilder<> &builder = cc.getBuilder();
+        // Recursively generate code for the struct expression
+        llvm::Value *structValue = structExpr->codegen(cc);
 
-        llvm::Value *structVal = structExpr->codegen(cc);
+        // Assuming the structValue is a pointer to the struct
+        // You can access the member using GEP (GetElementPtr)
+        unsigned idx = cc.getTable().getStructMemberIdx(structValue->getType()->getPointerElementType()->getStructName().str(), member);
+        llvm::Value *memberValue = cc.getBuilder().CreateStructGEP(structValue->getType()->getPointerElementType(), structValue, idx); // Replace 0 with the actual index of the member
 
-        auto al = llvm::dyn_cast<llvm::AllocaInst>(structVal);
-        if (al)
-        {
-            structType = al->getAllocatedType();
-            if (!al->getName().empty())
-            {
-                structVal = builder.CreateLoad(structVal->getType(), structVal, "l");
-            }
-        }
-        else
-        {
-            auto mi = dynamic_cast<MemberAccessExpr *>(structExpr.get());
-            if (mi)
-            {
-                unsigned index = cc.getTable().getStructMemberIdx(mi->structType->getStructName().str(), mi->mName);
-                if (mi->structType->getStructElementType(index)->isStructTy())
-                {
-                    structType = mi->structType->getStructElementType(index);
-                }
-                else
-                {
-                    structType = mi->structType;
-                }
-            }
-            else
-            {
+        // Load the value of the member
+        llvm::Value *loadedMember = cc.getBuilder().CreateLoad(memberValue->getType()->getPointerElementType(), memberValue);
 
-                throw std::runtime_error("Nested member types can only be called when nested");
-            }
-        }
-
-        unsigned idx = cc.getTable().getStructMemberIdx(structType->getStructName().str(), member);
-
-        llvm::Value *fieldPtr = builder.CreateStructGEP(structType, structVal, idx, "field_ptr");
-
-        llvm::Value *extractedElement = builder.CreateLoad(fieldPtr->getType(), fieldPtr, "mem_access");
-
-        return extractedElement;
+        return loadedMember;
     }
 };
 

@@ -55,45 +55,49 @@ std::unique_ptr<Expression> Parser::parse_symbol_expr()
     return std::make_unique<SymbolExpr>(advance().value);
 }
 
-std::unique_ptr<Expression> Parser::parse_array_expr()
+std::unique_ptr<Expression> Parser::parse_bool_expr()
 {
-    expect(TokenKind::OPEN_CURLY);
+    return std::make_unique<BoolExpr>(advance().value);
+}
 
-    std::vector<std::unique_ptr<Expression>> elements;
+std::unique_ptr<Expression> Parser::parse_ref_expr()
+{
+    expect(TokenKind::AND);
+    return std::make_unique<RefExpr>(advance().value);
+}
 
-    while (currentTokenKind() != TokenKind::CLOSE_CURLY)
-    {
-        auto e = parse_expr(BindingPower::Logical);
-        if (!e)
-        {
-            throw std::runtime_error("Failed to parse expression in array initializer.");
-        }
+std::unique_ptr<Expression> Parser::parse_ptr_expr()
+{
+    expect(TokenKind::STAR);
+    return std::make_unique<PtrExpr>(advance().value);
+}
 
-        elements.push_back(std::move(e));
+std::unique_ptr<Expression> Parser::parse_grouping_expr()
+{
+    expect(TokenKind::OPEN_PAREN);
+    std::unique_ptr<Expression> expr = parse_expr(BindingPower::Default);
+    expect(TokenKind::CLOSE_PAREN);
+    return expr;
+}
 
-        if (currentTokenKind() == TokenKind::COMMA)
-        {
-            expect(TokenKind::COMMA);
-        }
-        else if (currentTokenKind() != TokenKind::CLOSE_CURLY)
-        {
-            throw std::runtime_error("Expected ',' or '}' in array expression.");
-        }
-    }
+std::unique_ptr<Expression> Parser::parse_call_expr(std::unique_ptr<Expression> left)
+{
 
-    expect(TokenKind::CLOSE_CURLY);
+    std::vector<std::unique_ptr<Expression>> params;
 
-    if (elements.empty())
-    {
-        throw std::runtime_error("Array cannot be empty.");
-    }
+    expect(TokenKind::OPEN_PAREN);
+    params = parse_call_arguments();
+    expect(TokenKind::CLOSE_PAREN);
 
-    return std::make_unique<ArrayExpr>(std::move(elements));
+    auto callExpr = std::make_unique<CallExpr>(std::move(left), std::move(params));
+
+    return callExpr;
 }
 
 std::unique_ptr<Expression> Parser::parse_struct_expr()
 {
     expect(TokenKind::NEW);
+
     llvm::Type *t = parse_type();
 
     llvm::StructType *structType = llvm::dyn_cast<llvm::StructType>(t);
@@ -138,49 +142,74 @@ std::unique_ptr<Expression> Parser::parse_struct_expr()
     return structExpr;
 }
 
-std::unique_ptr<Expression> Parser::parse_call_expr(std::unique_ptr<Expression> left)
+std::unique_ptr<Expression> Parser::parse_member_access_expr(std::unique_ptr<Expression> left)
 {
-    std::string callFNName;
-    std::vector<std::unique_ptr<Expression>> params;
+    expect(TokenKind::DOT);
 
-    if (auto symbolExpr = dynamic_cast<SymbolExpr *>(left.get()))
-    {
-        callFNName = symbolExpr->name;
-    }
-    else
-    {
-        throw std::runtime_error("Expected a SymbolExpr for call expression");
-    }
+    std::string memberName = expect(TokenKind::IDENTIFIER).value;
+    auto memberAccessExpr = std::make_unique<MemberAccessExpr>(std::move(left), memberName);
 
-    expect(TokenKind::OPEN_PAREN);
-    params = parse_call_arguments();
-    expect(TokenKind::CLOSE_PAREN);
-
-    auto callExpr = std::make_unique<CallExpr>(callFNName, std::move(params));
-
-    return callExpr;
+    return memberAccessExpr;
 }
 
-std::unique_ptr<Expression> Parser::parse_array_access_expr(std::unique_ptr<Expression> left)
+std::unique_ptr<Expression> Parser::parse_array_expr()
 {
-    std::vector<std::unique_ptr<Expression>> indices;
+    expect(TokenKind::OPEN_CURLY); // eat {
 
-    while (currentTokenKind() == TokenKind::OPEN_BRACKET)
+    std::vector<std::unique_ptr<Expression>> elements;
+
+    while (currentTokenKind() != TokenKind::CLOSE_CURLY)
     {
-        expect(TokenKind::OPEN_BRACKET);
-        indices.push_back(parse_expr(BindingPower::Primary));
-        expect(TokenKind::CLOSE_BRACKET);
+        auto e = parse_expr(BindingPower::Logical);
+        if (!e)
+        {
+            throw std::runtime_error("Failed to parse expression in array initializer.");
+        }
+
+        // if (auto symbolExpr = dynamic_cast<SymbolExpr *>(e.get()))
+        // {
+
+        // }
+        elements.push_back(std::move(e));
+
+        if (currentTokenKind() == TokenKind::COMMA)
+        {
+            expect(TokenKind::COMMA); // eat ,
+        }
+        else if (currentTokenKind() != TokenKind::CLOSE_CURLY)
+        {
+            throw std::runtime_error("Expected ',' or '}' in array expression.");
+        }
     }
 
-    return std::make_unique<ArrayAccessExpr>(std::move(left), std::move(indices));
+    expect(TokenKind::CLOSE_CURLY); // eat }
+
+    if (elements.empty())
+    {
+        throw std::runtime_error("Array cannot be empty.");
+    }
+
+    return std::make_unique<ArrayExpr>(std::move(elements));
+}
+
+std::unique_ptr<Expression> Parser::parse_array_access_expr(std::unique_ptr<Expression> arrayExpr)
+{
+    std::unique_ptr<Expression> index;
+
+    expect(TokenKind::OPEN_BRACKET);           // eat [
+    index = parse_expr(BindingPower::Primary); // Parse index expression
+    expect(TokenKind::CLOSE_BRACKET);          // eat ]
+
+    return std::make_unique<ArrayAccessExpr>(std::move(arrayExpr), std::move(index));
 }
 
 std::unique_ptr<Expression> Parser::parse_binary_expr(std::unique_ptr<Expression> left)
 {
     Token op_token = currentToken();
-    char op = op_token.value[0];
+    std::string op = op_token.value; // Use string to handle multi-character operators
 
-    if (op != '+' && op != '-' && op != '*' && op != '/' && op != '%')
+    if (op != "+" && op != "-" && op != "*" && op != "/" && op != "%" &&
+        op != "==" && op != "!=" && op != "<" && op != ">" && op != "<=" && op != ">=")
     {
         std::string errorMessage = "Operator '";
         errorMessage += op;
@@ -197,24 +226,23 @@ std::unique_ptr<Expression> Parser::parse_binary_expr(std::unique_ptr<Expression
     while (current_bp < static_cast<int>(bp_lu[currentTokenKind()]))
     {
         op_token = currentToken();
-        op = op_token.value[0];
+        op = op_token.value; // Use string to handle multi-character operators
         current_bp = static_cast<int>(bp_lu[op_token.kind]);
         advance();
         right = parse_expr(static_cast<BindingPower>(current_bp));
     }
 
-    auto binaryExpr = std::make_unique<BinaryExpr>(std::move(left), std::move(right), op);
-    return binaryExpr;
-}
-
-std::unique_ptr<Expression> Parser::parse_member_access_expr(std::unique_ptr<Expression> left)
-{
-    expect(TokenKind::DOT);
-
-    std::string memberName = expect(TokenKind::IDENTIFIER).value;
-    auto memberAccessExpr = std::make_unique<MemberAccessExpr>(std::move(left), memberName);
-
-    return memberAccessExpr;
+    // Check for comparison operators and create ComparisonExpr instead of BinaryExpr
+    if (op == "==" || op == "!=" || op == "<" || op == ">" || op == "<=" || op == ">=")
+    {
+        auto compExpr = std::make_unique<ComparisonExpr>(std::move(left), std::move(right), op);
+        return compExpr;
+    }
+    else
+    {
+        auto binaryExpr = std::make_unique<BinaryExpr>(std::move(left), std::move(right), op[0]); // Use op[0] for single character operators
+        return binaryExpr;
+    }
 }
 
 std::vector<std::unique_ptr<Expression>> Parser::parse_call_arguments()

@@ -35,7 +35,7 @@ enum class TokenKind
 
     // logic
     OR,
-    AND,
+    LAND,
 
     // Symbols
     DOT,
@@ -55,6 +55,9 @@ enum class TokenKind
     SLASH,
     STAR,
     PERCENT,
+
+    // Pointers
+    AND,
 
     // Reserved Keywords
     LET,

@@ -117,22 +117,70 @@ std::vector<Token> Lexer::tokenize()
             tokens.push_back({TokenKind::CLOSE_PAREN, ")"});
             break;
         case '=':
-            tokens.push_back({TokenKind::ASSIGNMENT, "="});
+            if (pos + 1 < source.size() && source[pos + 1] == '=')
+            {
+                tokens.push_back({TokenKind::EQUALS, "=="});
+                ++pos;
+            }
+            else
+            {
+                tokens.push_back({TokenKind::ASSIGNMENT, "="});
+            }
             break;
         case '!':
-            tokens.push_back({TokenKind::NOT, "!"});
+            if (pos + 1 < source.size() && source[pos + 1] == '=')
+            {
+                tokens.push_back({TokenKind::NOT_EQUALS, "!="});
+                ++pos;
+            }
+            else
+            {
+                tokens.push_back({TokenKind::NOT, "!"});
+            }
             break;
         case '<':
-            tokens.push_back({TokenKind::LESS, "<"});
+            if (pos + 1 < source.size() && source[pos + 1] == '=')
+            {
+                tokens.push_back({TokenKind::LESS_EQUALS, "<="});
+                ++pos;
+            }
+            else
+            {
+                tokens.push_back({TokenKind::LESS, "<"});
+            }
             break;
         case '>':
-            tokens.push_back({TokenKind::GREATER, ">"});
+            if (pos + 1 < source.size() && source[pos + 1] == '=')
+            {
+                tokens.push_back({TokenKind::GREATER_EQUALS, ">="});
+                ++pos;
+            }
+            else
+            {
+                tokens.push_back({TokenKind::GREATER, ">"});
+            }
             break;
         case '|':
-            tokens.push_back({TokenKind::OR, "||"});
+            if (pos + 1 < source.size() && source[pos + 1] == '|')
+            {
+                tokens.push_back({TokenKind::OR, "||"});
+                ++pos;
+            }
+            else
+            {
+                throw std::runtime_error("Lexer::Error -> unrecognized token near " + remainder());
+            }
             break;
         case '&':
-            tokens.push_back({TokenKind::AND, "&&"});
+            if (pos + 1 < source.size() && source[pos + 1] == '&')
+            {
+                tokens.push_back({TokenKind::LAND, "&&"});
+                ++pos;
+            }
+            else
+            {
+                tokens.push_back({TokenKind::AND, "&"});
+            }
             break;
         case '.':
             tokens.push_back({TokenKind::DOT, "."});

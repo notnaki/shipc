@@ -12,14 +12,22 @@ class CallExpr : public Expression
 {
 private:
     std::vector<std::unique_ptr<Expression>> args;
-    std::string fnName;
+    std::unique_ptr<Expression> function;
 
 public:
-    CallExpr(std::string name, std::vector<std::unique_ptr<Expression>> arguments)
-        : fnName(std::move(name)), args(std::move(arguments)) {}
+    CallExpr(std::unique_ptr<Expression> fn, std::vector<std::unique_ptr<Expression>> arguments)
+        : function(std::move(fn)), args(std::move(arguments)) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
+        std::string fnName;
+        std::vector<llvm::Value *> arguments;
+
+        if (auto symbolExpr = dynamic_cast<SymbolExpr *>(function.get()))
+        {
+            fnName = symbolExpr->name;
+        }
+
         auto fn = cc.getModule().getFunction(fnName);
 
         if (fn == nullptr)
@@ -28,19 +36,18 @@ public:
             throw std::runtime_error("Function not defined: " + fnName);
         }
 
-        if (fn->arg_size() != args.size())
+        for (const auto &arg : args)
+        {
+            arguments.push_back(arg->codegen(cc));
+        }
+
+        if (fn->arg_size() != arguments.size())
         {
             if (!fn->isVarArg() || fn->arg_size() > args.size())
             {
                 printf("Error: Function '%s' called with incorrect number of arguments.\n", fnName.c_str());
                 throw std::runtime_error("Incorrect number of arguments for function: " + fnName);
             }
-        }
-
-        std::vector<llvm::Value *> arguments;
-        for (const auto &arg : args)
-        {
-            arguments.push_back(arg->codegen(cc));
         }
 
         return cc.getBuilder().CreateCall(fn, arguments);

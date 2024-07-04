@@ -1,29 +1,23 @@
 #include "compiler/ContextTable.hpp"
 
-llvm::Type *ContextTable::getElementType(std::string elementName)
+void ContextTable::addVariable(std::string name, llvm::Value *value)
 {
-    return contextTable[elementName].second;
+    variables[name] = value;
 }
 
-llvm::Value *ContextTable::getElementValue(std::string elementName)
+llvm::Value *ContextTable::getVariable(std::string name)
 {
-    return contextTable[elementName].first;
+    return variables[name];
 }
 
-void ContextTable::addElement(std::string elementName, llvm::Value *elementValue, llvm::Type *elementType)
+void ContextTable::addStructType(std::string name, llvm::Type *type)
 {
-    auto elem = std::make_pair(elementValue, elementType);
-    contextTable[elementName] = elem;
+    structTypes[name] = type;
 }
 
-llvm::StructType *ContextTable::getStructType(std::string structName)
+llvm::Type *ContextTable::getStructType(std::string name)
 {
-    return structTypes[structName];
-}
-
-void ContextTable::addStructType(std::string structName, llvm::StructType *structType)
-{
-    structTypes[structName] = structType;
+    return structTypes[name];
 }
 
 void ContextTable::addStructMemberMap(std::string structName, std::unordered_map<std::string, unsigned> memberMap)

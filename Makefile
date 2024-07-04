@@ -1,5 +1,5 @@
 CXX = clang++
-CXXFLAGS = `llvm-config --cxxflags` -I include
+CXXFLAGS = `llvm-config --cxxflags` -I include -Wno-deprecated-declarations
 LDFLAGS = `llvm-config --ldflags --system-libs --libs`
 
 SRCS = src/main.cpp src/compiler/Shipc.cpp src/compiler/CompilerContext.cpp src/compiler/ContextTable.cpp src/lexer/Lexer.cpp src/lexer/Tokens.cpp src/lexer/util.cpp src/parser/Parser.cpp src/parser/ParseExpr.cpp src/parser/ParseStmt.cpp src/parser/ParseType.cpp

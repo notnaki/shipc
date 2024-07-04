@@ -86,7 +86,7 @@ std::unique_ptr<Statement> Parser::parse_return_stmt()
 
 std::unique_ptr<Statement> Parser::parse_var_decl_stmt()
 {
-    llvm::Type *explicitType;
+
     std::unique_ptr<Expression> value;
 
     expect(TokenKind::LET);
@@ -94,7 +94,7 @@ std::unique_ptr<Statement> Parser::parse_var_decl_stmt()
 
     expect(TokenKind::COLON);
 
-    explicitType = parse_type();
+    auto explicitType = parse_type();
 
     if (currentTokenKind() != TokenKind::SEMI_COLON)
     {
@@ -110,7 +110,6 @@ std::unique_ptr<Statement> Parser::parse_var_decl_stmt()
 
 std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
 {
-    // TODO add to parse_type symboltype
     expect(TokenKind::STRUCT);
 
     std::vector<llvm::Type *> memberTypes;
@@ -131,14 +130,6 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
         expectError(TokenKind::COLON, "Expected to find colon following property name inside struct declaration");
 
         llvm::Type *propType = parse_type();
-
-        if (propType->isStructTy())
-        {
-            if (propType->getStructName() == structName)
-            {
-                propType = propType->getPointerTo();
-            }
-        }
 
         expect(TokenKind::SEMI_COLON);
 
@@ -174,7 +165,9 @@ std::vector<std::pair<std::string, llvm::Type *>> Parser::parse_fn_params()
     {
         std::string paramName = expect(TokenKind::IDENTIFIER).value;
         expect(TokenKind::COLON);
+
         llvm::Type *paramType = parse_type();
+
         params.push_back(std::make_pair(paramName, paramType));
 
         if (currentTokenKind() != TokenKind::CLOSE_PAREN)

@@ -1,16 +1,16 @@
-#ifndef SYMBOLEXPR_HPP
-#define SYMBOLEXPR_HPP
+#ifndef PTREXPR_HPP
+#define PTREXPR_HPP
 
 #include <llvm/IR/Type.h>
 #include <llvm/IR/ValueSymbolTable.h>
 #include "Expression.hpp"
 
-class SymbolExpr : public Expression
+class PtrExpr : public Expression
 {
 public:
     std::string name;
 
-    SymbolExpr(std::string n) : name(n) {}
+    PtrExpr(std::string n) : name(n) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
@@ -22,7 +22,8 @@ public:
             throw std::runtime_error("Variable not found in scope: " + name);
         }
 
-        llvm::Value *var = cc.getTable().getVariable(name);
+        llvm::Value *value = cc.getTable().getVariable(name);
+        llvm::Value *var = cc.getBuilder().CreateLoad(value->getType()->getPointerElementType(), value);
 
         return var;
     }

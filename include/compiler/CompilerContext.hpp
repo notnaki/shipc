@@ -21,6 +21,7 @@ private:
 public:
     CompilerContext(const std::string &moduleName) : module(moduleName, context), builder(context)
     {
+        context.setOpaquePointers(false);
         setupExternalFunctions();
     }
 

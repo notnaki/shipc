@@ -16,4 +16,7 @@ const std::unordered_map<std::string, TokenKind> reserved_words{
     {"in", TokenKind::IN},
     {"struct", TokenKind::STRUCT},
     {"return", TokenKind::RETURN},
-    {"break", TokenKind::BREAK}};
+    {"break", TokenKind::BREAK},
+    {"true", TokenKind::TRUE},
+    {"false", TokenKind::FALSE},
+};

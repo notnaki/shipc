@@ -11,18 +11,18 @@
 class ContextTable
 {
 private:
-    std::unordered_map<std::string, std::pair<llvm::Value *, llvm::Type *>> contextTable;
-    std::unordered_map<std::string, llvm::StructType *> structTypes;
+    std::unordered_map<std::string, llvm::Value *> variables;
 
+    std::unordered_map<std::string, llvm::Type *> structTypes;
     std::unordered_map<std::string, std::unordered_map<std::string, unsigned>> structMemberMap;
 
 public:
-    llvm::Type *getElementType(std::string elementName);
-    llvm::Value *getElementValue(std::string elementName);
-    void addElement(std::string elementName, llvm::Value *elementValue, llvm::Type *elementType);
+    void addVariable(std::string name, llvm::Value *value);
+    llvm::Value *getVariable(std::string name);
 
-    llvm::StructType *getStructType(std::string structName);
-    void addStructType(std::string structName, llvm::StructType *structType);
+    void addStructType(std::string name, llvm::Type *structType);
+    llvm::Type *getStructType(std::string name);
+
     void addStructMemberMap(std::string structName, std::unordered_map<std::string, unsigned> memberMap);
     unsigned getStructMemberIdx(std::string structName, std::string memberName);
 };

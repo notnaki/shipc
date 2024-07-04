@@ -22,23 +22,29 @@
 #include "ast/statements/VarDeclStmt.hpp"
 #include "ast/statements/StructDeclStmt.hpp"
 
+#include "ast/expressions/ComparisonExpr.hpp"
+#include "ast/expressions/BinaryExpr.hpp"
+#include "ast/expressions/BoolExpr.hpp"
+#include "ast/expressions/ArrayAccessExpr.hpp"
+#include "ast/expressions/ArrayExpr.hpp"
+#include "ast/expressions/MemberAccessExpr.hpp"
+#include "ast/expressions/StructExpr.hpp"
+#include "ast/expressions/PtrExpr.hpp"
+#include "ast/expressions/RefExpr.hpp"
+#include "ast/expressions/SymbolExpr.hpp"
 #include "ast/expressions/Expression.hpp"
 #include "ast/expressions/IntegerExpr.hpp"
 #include "ast/expressions/FloatExpr.hpp"
 #include "ast/expressions/DoubleExpr.hpp"
 #include "ast/expressions/StringExpr.hpp"
-#include "ast/expressions/ArrayExpr.hpp"
-#include "ast/expressions/StructExpr.hpp"
 #include "ast/expressions/CallExpr.hpp"
-#include "ast/expressions/BinaryExpr.hpp"
-#include "ast/expressions/ArrayAccessExpr.hpp"
-#include "ast/expressions/MemberAccessExpr.hpp"
 
 class Parser
 {
 private:
-    std::vector<Token> tokens;
     size_t pos;
+    std::vector<Token> tokens;
+
     CompilerContext &cc;
 
 public:
@@ -80,18 +86,23 @@ private:
     std::unique_ptr<Expression> parse_float_expr();
     std::unique_ptr<Expression> parse_double_expr();
     std::unique_ptr<Expression> parse_string_expr();
+    std::unique_ptr<Expression> parse_bool_expr();
     std::unique_ptr<Expression> parse_symbol_expr();
-    std::unique_ptr<Expression> parse_array_expr();
+    std::unique_ptr<Expression> parse_ptr_expr();
+    std::unique_ptr<Expression> parse_ref_expr();
+    std::unique_ptr<Expression> parse_grouping_expr();
     std::unique_ptr<Expression> parse_struct_expr();
-    std::unique_ptr<Expression> parse_call_expr(std::unique_ptr<Expression> left);
-    std::unique_ptr<Expression> parse_array_access_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_member_access_expr(std::unique_ptr<Expression> left);
+    std::unique_ptr<Expression> parse_array_expr();
+    std::unique_ptr<Expression> parse_array_access_expr(std::unique_ptr<Expression> arrayExpr);
     std::unique_ptr<Expression> parse_binary_expr(std::unique_ptr<Expression> left);
+    std::unique_ptr<Expression> parse_call_expr(std::unique_ptr<Expression> left);
 
     std::vector<std::unique_ptr<Expression>> parse_call_arguments();
 
     // Type
     llvm::Type *parse_type();
+    llvm::Type *parse_struct_type(std::string structName);
     llvm::Type *parse_symbol_type();
     llvm::Type *parse_array_type();
 };

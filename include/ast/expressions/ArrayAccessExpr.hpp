@@ -1,48 +1,39 @@
-#ifndef ARRAYACCESSEXPR_H
-#define ARRAYACCESSEXPR_H
-
-#include <vector>
-#include <memory>
-
-#include <llvm/IR/Type.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
+#ifndef ARRAYACCESSEXPR_HPP
+#define ARRAYACCESSEXPR_HPP
 
 #include "Expression.hpp"
+
+#include "llvm/IR/Type.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/LLVMContext.h"
 
 class ArrayAccessExpr : public Expression
 {
 private:
     std::unique_ptr<Expression> arrayExpr;
-    std::vector<std::unique_ptr<Expression>> indices;
+    std::unique_ptr<Expression> indexExpr;
 
 public:
-    ArrayAccessExpr(std::unique_ptr<Expression> array, std::vector<std::unique_ptr<Expression>> idx)
-        : arrayExpr(std::move(array)), indices(std::move(idx)) {}
+    ArrayAccessExpr(std::unique_ptr<Expression> array, std::unique_ptr<Expression> index)
+        : arrayExpr(std::move(array)), indexExpr(std::move(index)) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
         llvm::IRBuilder<> &builder = cc.getBuilder();
+        llvm::LLVMContext &context = cc.getContext();
 
-        llvm::Value *array = arrayExpr->codegen(cc);
+        llvm::Value *arrayPtr = arrayExpr->codegen(cc);
+        llvm::Value *index = indexExpr->codegen(cc);
 
-        std::vector<unsigned> llvmIndices;
-        for (const auto &idx : indices)
+        if (!arrayPtr || !index)
         {
-            llvm::Value *llvmIdxValue = idx->codegen(cc);
-            if (llvm::ConstantInt *constInt = llvm::dyn_cast<llvm::ConstantInt>(llvmIdxValue))
-            {
-                llvmIndices.push_back(constInt->getLimitedValue());
-            }
-            else
-            {
-                throw std::runtime_error("Index value must be a constant integer.");
-            }
+            throw std::runtime_error("Array pointer or index can't be null");
         }
 
-        llvm::Value *extractedElement = builder.CreateExtractValue(array, llvmIndices);
+        llvm::Value *elementPtr = builder.CreateGEP(arrayPtr->getType()->getPointerElementType(), arrayPtr, {builder.getInt32(0), index}, "elementptr");
+        llvm::Value *loadedElement = builder.CreateLoad(elementPtr->getType()->getPointerElementType(), elementPtr, "loadedelement");
 
-        return extractedElement;
+        return loadedElement;
     }
 };
 

@@ -13,10 +13,19 @@ public:
 
     void codegen(CompilerContext &cc) const override
     {
+        ContextTable oldTable = cc.getTable();
+        ContextTable newTable;
+
+        newTable.setParent(&oldTable);
+
+        cc.setTable(newTable);
+
         for (const auto &stmt : body)
         {
             stmt->codegen(cc);
         }
+
+        cc.setTable(oldTable);
     }
 };
 

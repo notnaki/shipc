@@ -7,7 +7,16 @@ void ContextTable::addVariable(std::string name, llvm::Value *value)
 
 llvm::Value *ContextTable::getVariable(std::string name)
 {
-    return variables[name];
+    ContextTable *existsTable = resolveVariable(name);
+
+    if (existsTable == nullptr)
+    {
+        throw std::runtime_error("Variable '" + name + "' not found in scope.");
+    }
+    else
+    {
+        return existsTable->variables[name];
+    }
 }
 
 void ContextTable::addStructType(std::string name, llvm::Type *type)
@@ -43,4 +52,27 @@ unsigned ContextTable::getStructMemberIdx(std::string structName, std::string me
     }
 
     return memberIt->second;
+}
+
+bool ContextTable::containsVariable(const std::string &name) const
+{
+    return variables.find(name) != variables.end();
+}
+
+ContextTable *ContextTable::resolveVariable(const std::string &name)
+{
+    if (containsVariable(name))
+    {
+        return this;
+    }
+    else if (parent)
+    {
+        return parent->resolveVariable(name);
+    }
+    return nullptr;
+}
+
+void ContextTable::setParent(ContextTable *p)
+{
+    parent = p;
 }

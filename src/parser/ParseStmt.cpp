@@ -16,6 +16,9 @@ std::unique_ptr<Statement> Parser::parse_stmt()
     case TokenKind::STRUCT:
         return parse_struct_decl_stmt();
 
+    case TokenKind::IF:
+        return parse_if_stmt();
+
     default:
         return parse_expr_stmt();
     }
@@ -153,6 +156,50 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
     auto structDeclStmt = std::make_unique<StructDeclStmt>();
 
     return structDeclStmt;
+}
+
+std::unique_ptr<Statement> Parser::parse_if_stmt()
+{
+    expect(TokenKind::IF);
+    expect(TokenKind::OPEN_PAREN);
+
+    std::unique_ptr<Expression> condition = parse_expr(BindingPower::Default);
+
+    expect(TokenKind::CLOSE_PAREN);
+
+    // parse the if body | the body that will be executed if true
+
+    std::unique_ptr<BlockStmt> body = parse_block_stmt();
+
+    // parse the else body | the body that will be executed if false
+
+    std::unique_ptr<BlockStmt> elseBody;
+    std::vector<std::pair<std::unique_ptr<Expression>, std::unique_ptr<BlockStmt>>> elifBodies;
+
+    while (currentTokenKind() == TokenKind::ELSE)
+    {
+        expect(TokenKind::ELSE);
+
+        if (currentTokenKind() == TokenKind::IF)
+        {
+            expect(TokenKind::IF);
+            expect(TokenKind::OPEN_PAREN);
+            std::unique_ptr<Expression> elifCond = parse_expr(BindingPower::Default);
+            expect(TokenKind::CLOSE_PAREN);
+            std::unique_ptr<BlockStmt> elifBody = parse_block_stmt();
+
+            elifBodies.emplace_back(std::move(elifCond), std::move(elifBody));
+        }
+        else
+        {
+            elseBody = parse_block_stmt();
+            break;
+        }
+    }
+
+    auto ifStmt = std::make_unique<IfStmt>(std::move(body), std::move(elseBody), std::move(elifBodies), std::move(condition));
+
+    return ifStmt;
 }
 
 // |----- Helpers -----|

@@ -26,3 +26,8 @@ void CompilerContext::setupExternalFunctions()
                                    {builder.getInt8PtrTy(), builder.getInt8PtrTy()}, // parameter types
                                    false));
 }
+
+void CompilerContext::setTable(ContextTable t)
+{
+    contextTable = t;
+}

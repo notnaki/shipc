@@ -11,7 +11,6 @@ all: build run
 build: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@mkdir -p bin
 	$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 build/%.o: src/%.cpp

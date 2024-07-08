@@ -11,12 +11,21 @@
 class ContextTable
 {
 private:
+    ContextTable *parent;
+
     std::unordered_map<std::string, llvm::Value *> variables;
 
     std::unordered_map<std::string, llvm::Type *> structTypes;
     std::unordered_map<std::string, std::unordered_map<std::string, unsigned>> structMemberMap;
 
+    bool containsVariable(const std::string &name) const;
+    ContextTable *resolveVariable(const std::string &name);
+
 public:
+    ContextTable() : parent(nullptr) {}
+
+    void setParent(ContextTable *p);
+
     void addVariable(std::string name, llvm::Value *value);
     llvm::Value *getVariable(std::string name);
 

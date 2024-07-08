@@ -30,6 +30,8 @@ public:
     llvm::IRBuilder<> &getBuilder();
     ContextTable &getTable();
 
+    void setTable(ContextTable t);
+
     void setupExternalFunctions();
     void save(std::string filename);
 };

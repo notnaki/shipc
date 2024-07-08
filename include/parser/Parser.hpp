@@ -21,6 +21,7 @@
 #include "ast/statements/ReturnStmt.hpp"
 #include "ast/statements/VarDeclStmt.hpp"
 #include "ast/statements/StructDeclStmt.hpp"
+#include "ast/statements/IfStmt.hpp"
 
 #include "ast/expressions/ComparisonExpr.hpp"
 #include "ast/expressions/BinaryExpr.hpp"
@@ -76,6 +77,7 @@ private:
     std::unique_ptr<Statement> parse_return_stmt();
     std::unique_ptr<Statement> parse_var_decl_stmt();
     std::unique_ptr<Statement> parse_struct_decl_stmt();
+    std::unique_ptr<Statement> parse_if_stmt();
 
     std::vector<std::pair<std::string, llvm::Type *>> parse_fn_params();
 

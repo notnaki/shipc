@@ -20,6 +20,7 @@ private:
 
     bool containsVariable(const std::string &name) const;
     ContextTable *resolveVariable(const std::string &name);
+    ContextTable *resolveStructType(const std::string &name);
 
 public:
     ContextTable() : parent(nullptr) {}

@@ -26,7 +26,16 @@ void ContextTable::addStructType(std::string name, llvm::Type *type)
 
 llvm::Type *ContextTable::getStructType(std::string name)
 {
-    return structTypes[name];
+    ContextTable *existsTable = resolveStructType(name);
+
+    if (existsTable == nullptr)
+    {
+        throw std::runtime_error("Struct type '" + name + "' not found in scope.");
+    }
+    else
+    {
+        return existsTable->structTypes[name];
+    }
 }
 
 void ContextTable::addStructMemberMap(std::string structName, std::unordered_map<std::string, unsigned> memberMap)
@@ -36,14 +45,14 @@ void ContextTable::addStructMemberMap(std::string structName, std::unordered_map
 
 unsigned ContextTable::getStructMemberIdx(std::string structName, std::string memberName)
 {
-    auto structDefIt = structMemberMap.find(structName);
-    if (structDefIt == structMemberMap.end())
+    ContextTable *existsTable = resolveStructType(structName);
+
+    if (existsTable == nullptr)
     {
-        printf("Struct not found\n");
-        return 0;
+        throw std::runtime_error("Struct '" + structName + "' not found in scope.");
     }
 
-    const std::unordered_map<std::string, unsigned int> &structDef = structDefIt->second;
+    const std::unordered_map<std::string, unsigned int> &structDef = existsTable->structMemberMap[structName];
 
     auto memberIt = structDef.find(memberName);
     if (memberIt == structDef.end())
@@ -68,6 +77,19 @@ ContextTable *ContextTable::resolveVariable(const std::string &name)
     else if (parent)
     {
         return parent->resolveVariable(name);
+    }
+    return nullptr;
+}
+
+ContextTable *ContextTable::resolveStructType(const std::string &name)
+{
+    if (structTypes.find(name) != structTypes.end())
+    {
+        return this;
+    }
+    else if (parent)
+    {
+        return parent->resolveStructType(name);
     }
     return nullptr;
 }

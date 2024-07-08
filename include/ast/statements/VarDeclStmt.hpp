@@ -51,7 +51,7 @@ public:
             cc.getBuilder().CreateStore(value, allocaInst);
         }
 
-        cc.getTable().addVariable(varName, value);
+        cc.getTable().addVariable(varName, allocaInst);
     }
 };
 

@@ -40,6 +40,7 @@
 #include "ast/expressions/DoubleExpr.hpp"
 #include "ast/expressions/StringExpr.hpp"
 #include "ast/expressions/CallExpr.hpp"
+#include "ast/expressions/AssignmentExpr.hpp"
 
 class Parser
 {
@@ -98,6 +99,7 @@ private:
     std::unique_ptr<Expression> parse_struct_expr();
     std::unique_ptr<Expression> parse_member_access_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_array_expr();
+    std::unique_ptr<Expression> parse_assignment_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_array_access_expr(std::unique_ptr<Expression> arrayExpr);
     std::unique_ptr<Expression> parse_binary_expr(std::unique_ptr<Expression> left);
     std::unique_ptr<Expression> parse_call_expr(std::unique_ptr<Expression> left);

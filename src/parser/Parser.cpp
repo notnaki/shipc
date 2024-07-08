@@ -23,6 +23,8 @@ Program Parser::Parse()
         {TokenKind::DOT, &Parser::parse_member_access_expr},
         {TokenKind::OPEN_BRACKET, &Parser::parse_array_access_expr},
 
+        {TokenKind::ASSIGNMENT, &Parser::parse_assignment_expr},
+
         {TokenKind::PLUS, &Parser::parse_binary_expr},
         {TokenKind::DASH, &Parser::parse_binary_expr},
         {TokenKind::STAR, &Parser::parse_binary_expr},
@@ -42,6 +44,7 @@ Program Parser::Parse()
         {TokenKind::OPEN_PAREN, BindingPower::Call},
         {TokenKind::OPEN_BRACKET, BindingPower::Call},
         {TokenKind::DOT, BindingPower::Member},
+        {TokenKind::ASSIGNMENT, BindingPower::Assignment},
 
         {TokenKind::STAR, BindingPower::Multiplicative},
         {TokenKind::SLASH, BindingPower::Multiplicative},

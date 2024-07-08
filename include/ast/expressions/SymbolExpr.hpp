@@ -14,17 +14,8 @@ public:
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
-        // llvm::Function *currentFunction = cc.getBuilder().GetInsertBlock()->getParent();
-
-        // if (!currentFunction->getValueSymbolTable()->lookup(name))
-        // {
-        //     printf("Error: Variable '%s' is not found in scope.\n", name.c_str());
-        //     throw std::runtime_error("Variable not found in scope: " + name);
-        // }
-
         llvm::Value *var = cc.getTable().getVariable(name);
-
-        return var;
+        return cc.getBuilder().CreateLoad(var->getType()->getPointerElementType(), var);
     }
 };
 

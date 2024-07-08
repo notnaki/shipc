@@ -94,6 +94,20 @@ std::unique_ptr<Expression> Parser::parse_call_expr(std::unique_ptr<Expression> 
     return callExpr;
 }
 
+std::unique_ptr<Expression> Parser::parse_assignment_expr(std::unique_ptr<Expression> left)
+{
+    if (auto sym = dynamic_cast<SymbolExpr *>(left.get()))
+    {
+        expect(TokenKind::ASSIGNMENT);
+        std::unique_ptr<Expression> newVal = parse_expr(BindingPower::Assignment);
+
+        auto assignmentExpr = std::make_unique<AssignmentExpr>(sym->name, std::move(newVal));
+        return assignmentExpr;
+    }
+
+    throw std::runtime_error("Assignment expressions currently only supports variable reassignments");
+}
+
 std::unique_ptr<Expression> Parser::parse_struct_expr()
 {
     expect(TokenKind::NEW);

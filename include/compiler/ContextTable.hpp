@@ -28,6 +28,7 @@ public:
     void setParent(ContextTable *p);
 
     void addVariable(std::string name, llvm::Value *value);
+    void removeVariable(std::string name);
     llvm::Value *getVariable(std::string name);
 
     void addStructType(std::string name, llvm::Type *structType);

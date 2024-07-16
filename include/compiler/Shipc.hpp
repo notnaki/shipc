@@ -21,8 +21,6 @@ private:
     std::string name;
     CompilerContext cc;
 
-    void setupExernFunctions();
-
     std::string replace_escape_sequences(const std::string &input);
     std::string readFile(std::string filename);
 };

@@ -2,7 +2,7 @@
 
 int main()
 {
-    Shipc vm("examples/00.sp");
+    Shipc vm("examples/01.sp");
     vm.exec();
 
     return 0;

@@ -19,6 +19,11 @@ public:
     VarDeclStmt(const std::string &name, llvm::Type *type, std::unique_ptr<Expression> initValue)
         : varName(name), expectedType(type), initialValue(std::move(initValue)) {}
 
+    std::string getName()
+    {
+        return varName;
+    }
+
     void codegen(CompilerContext &cc) const override
     {
         llvm::Function *currentFunction = cc.getBuilder().GetInsertBlock()->getParent();

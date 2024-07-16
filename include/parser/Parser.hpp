@@ -23,6 +23,7 @@
 #include "ast/statements/StructDeclStmt.hpp"
 #include "ast/statements/IfStmt.hpp"
 #include "ast/statements/WhileStmt.hpp"
+#include "ast/statements/ForStmt.hpp"
 
 #include "ast/expressions/ComparisonExpr.hpp"
 #include "ast/expressions/BinaryExpr.hpp"
@@ -81,6 +82,7 @@ private:
     std::unique_ptr<Statement> parse_struct_decl_stmt();
     std::unique_ptr<Statement> parse_if_stmt();
     std::unique_ptr<Statement> parse_while_stmt();
+    std::unique_ptr<Statement> parse_for_stmt();
 
     std::vector<std::pair<std::string, llvm::Type *>> parse_fn_params();
 

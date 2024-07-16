@@ -2,7 +2,17 @@
 
 void ContextTable::addVariable(std::string name, llvm::Value *value)
 {
+    if (resolveVariable(name))
+    {
+        throw std::runtime_error("Variable '" + name + "' is already defined");
+    }
     variables[name] = value;
+}
+
+void ContextTable::removeVariable(std::string name)
+{
+
+    variables.erase(name);
 }
 
 llvm::Value *ContextTable::getVariable(std::string name)

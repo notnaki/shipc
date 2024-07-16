@@ -22,6 +22,9 @@ std::unique_ptr<Statement> Parser::parse_stmt()
     case TokenKind::WHILE:
         return parse_while_stmt();
 
+    case TokenKind::FOR:
+        return parse_for_stmt();
+
     default:
         return parse_expr_stmt();
     }
@@ -217,6 +220,26 @@ std::unique_ptr<Statement> Parser::parse_while_stmt()
     auto whileStmt = std::make_unique<WhileStmt>(std::move(body), std::move(condition));
 
     return whileStmt;
+}
+
+std::unique_ptr<Statement> Parser::parse_for_stmt()
+{
+    expect(TokenKind::FOR);
+    expect(TokenKind::OPEN_PAREN);
+    std::unique_ptr<Statement> vardecl = parse_var_decl_stmt();
+
+    std::unique_ptr<Expression> condition = parse_expr(BindingPower::Default);
+    expect(TokenKind::SEMI_COLON);
+
+    std::unique_ptr<Expression> after = parse_expr(BindingPower::Comma);
+    expect(TokenKind::SEMI_COLON);
+    expect(TokenKind::CLOSE_PAREN);
+
+    std::unique_ptr<BlockStmt> body = parse_block_stmt();
+
+    auto forStmt = std::make_unique<ForStmt>(std::move(vardecl), std::move(condition), std::move(after), std::move(body));
+
+    return forStmt;
 }
 
 // |----- Helpers -----|

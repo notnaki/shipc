@@ -110,16 +110,12 @@ std::unique_ptr<Expression> Parser::parse_call_expr(std::unique_ptr<Expression> 
 
 std::unique_ptr<Expression> Parser::parse_assignment_expr(std::unique_ptr<Expression> left)
 {
-    if (auto sym = dynamic_cast<SymbolExpr *>(left.get()))
-    {
-        expect(TokenKind::ASSIGNMENT);
-        std::unique_ptr<Expression> newVal = parse_expr(BindingPower::Assignment);
 
-        auto assignmentExpr = std::make_unique<AssignmentExpr>(sym->name, std::move(newVal));
-        return assignmentExpr;
-    }
+    expect(TokenKind::ASSIGNMENT);
+    std::unique_ptr<Expression> newVal = parse_expr(BindingPower::Assignment);
 
-    throw std::runtime_error("Assignment expressions currently only supports variable reassignments");
+    auto assignmentExpr = std::make_unique<AssignmentExpr>(std::move(left), std::move(newVal));
+    return assignmentExpr;
 }
 
 std::unique_ptr<Expression> Parser::parse_struct_expr()
@@ -143,7 +139,7 @@ std::unique_ptr<Expression> Parser::parse_struct_expr()
         auto e = parse_expr(BindingPower::Logical);
         if (!e)
         {
-            throw std::runtime_error("Failed to parse expression in array initializer.");
+            throw std::runtime_error("Failed to parse expression in struct initializer.");
         }
 
         elements.push_back(std::move(e));
@@ -154,7 +150,7 @@ std::unique_ptr<Expression> Parser::parse_struct_expr()
         }
         else if (currentTokenKind() != TokenKind::CLOSE_CURLY)
         {
-            throw std::runtime_error("Expected ',' or '}' in array expression.");
+            throw std::runtime_error("Expected ',' or '}' in struct expression.");
         }
     }
 
@@ -162,7 +158,7 @@ std::unique_ptr<Expression> Parser::parse_struct_expr()
 
     if (elements.empty())
     {
-        throw std::runtime_error("Array cannot be empty.");
+        throw std::runtime_error("Struct cannot be empty.");
     }
 
     auto structExpr = std::make_unique<StructExpr>(structType, std::move(elements));

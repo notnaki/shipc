@@ -42,23 +42,8 @@ public:
 
                     formatStr += "%s";
 
-                    llvm::Constant *trueStr = llvm::ConstantDataArray::getString(context, "true");
-                    llvm::Constant *falseStr = llvm::ConstantDataArray::getString(context, "false");
-
-                    llvm::GlobalVariable *trueStrGlobal = new llvm::GlobalVariable(
-                        cc.getModule(), trueStr->getType(), true,
-                        llvm::GlobalValue::PrivateLinkage, trueStr, "trueStr");
-                    llvm::GlobalVariable *falseStrGlobal = new llvm::GlobalVariable(
-                        cc.getModule(), falseStr->getType(), true,
-                        llvm::GlobalValue::PrivateLinkage, falseStr, "falseStr");
-
-                    llvm::Value *trueStrPtr = builder.CreateBitCast(trueStrGlobal, llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context)));
-                    llvm::Value *falseStrPtr = builder.CreateBitCast(falseStrGlobal, llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context)));
-
-                    llvm::Value *booleanToInt = builder.CreateZExt(partValue, llvm::Type::getInt32Ty(context));
-
-                    llvm::Value *cond = builder.CreateICmpNE(booleanToInt, llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0));
-                    partValue = builder.CreateSelect(cond, trueStrPtr, falseStrPtr);
+                    llvm::Value *cond = builder.CreateICmpNE(partValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(context), 0));
+                    partValue = builder.CreateSelect(cond, cc.getTrueStrConst(), cc.getFalseStrConst());
                 }
                 else
                 {

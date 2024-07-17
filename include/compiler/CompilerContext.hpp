@@ -18,6 +18,9 @@ private:
 
     ContextTable contextTable;
 
+    llvm::Constant *trueStrConst = nullptr;
+    llvm::Constant *falseStrConst = nullptr;
+
 public:
     CompilerContext(const std::string &moduleName) : module(moduleName, context), builder(context)
     {
@@ -34,6 +37,9 @@ public:
 
     void setupExternalFunctions();
     void save(std::string filename);
+
+    llvm::Constant *getTrueStrConst();
+    llvm::Constant *getFalseStrConst();
 };
 
 #endif

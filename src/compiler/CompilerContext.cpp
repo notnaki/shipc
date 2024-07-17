@@ -36,3 +36,21 @@ void CompilerContext::setTable(ContextTable t)
 {
     contextTable = t;
 }
+
+llvm::Constant *CompilerContext::getTrueStrConst()
+{
+    if (!trueStrConst)
+    {
+        trueStrConst = getBuilder().CreateGlobalStringPtr("true", "true.str");
+    }
+    return trueStrConst;
+}
+
+llvm::Constant *CompilerContext::getFalseStrConst()
+{
+    if (!falseStrConst)
+    {
+        falseStrConst = getBuilder().CreateGlobalStringPtr("false", "false.str");
+    }
+    return falseStrConst;
+}

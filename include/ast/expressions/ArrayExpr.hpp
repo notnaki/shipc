@@ -33,13 +33,10 @@ public:
             elementValues.push_back(elementValue);
         }
 
-        // Create an LLVM array type based on the type of the first element and the number of elements
         llvm::ArrayType *arrayType = llvm::ArrayType::get(elementValues[0]->getType(), elementValues.size());
 
-        // Create an alloca for the array
         llvm::AllocaInst *arrayPtr = builder.CreateAlloca(arrayType, nullptr, "array");
 
-        // Store each element in the array
         for (size_t i = 0; i < elementValues.size(); ++i)
         {
             llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), i);

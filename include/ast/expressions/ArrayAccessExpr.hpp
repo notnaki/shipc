@@ -9,11 +9,11 @@
 
 class ArrayAccessExpr : public Expression
 {
-private:
+
+public:
     std::unique_ptr<Expression> arrayExpr;
     std::unique_ptr<Expression> indexExpr;
 
-public:
     ArrayAccessExpr(std::unique_ptr<Expression> array, std::unique_ptr<Expression> index)
         : arrayExpr(std::move(array)), indexExpr(std::move(index)) {}
 

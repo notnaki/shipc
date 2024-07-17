@@ -22,6 +22,7 @@ private:
     ContextTable *resolveVariable(const std::string &name);
     ContextTable *resolveStructType(const std::string &name);
 
+
 public:
     ContextTable() : parent(nullptr) {}
 

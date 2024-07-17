@@ -8,17 +8,42 @@
 class AssignmentExpr : public Expression
 {
 public:
-    std::string name;
-    std::unique_ptr<Expression> newVal;
+    std::unique_ptr<Expression> lhs;
+    std::unique_ptr<Expression> rhs;
 
-    AssignmentExpr(std::string n, std::unique_ptr<Expression> value) : name(n), newVal(std::move(value)) {}
+    AssignmentExpr(std::unique_ptr<Expression> var, std::unique_ptr<Expression> value) : lhs(std::move(var)), rhs(std::move(value)) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
+        llvm::Value *value = rhs->codegen(cc);
 
-        llvm::Value *variable = cc.getTable().getVariable(name);
-        llvm::Value *value = newVal->codegen(cc);
-        cc.getBuilder().CreateStore(value, variable);
+        if (auto symbolExpr = dynamic_cast<SymbolExpr *>(lhs.get()))
+        {
+            llvm::Value *var = cc.getTable().getVariable(symbolExpr->name);
+            cc.getBuilder().CreateStore(value, var);
+        }
+        else if (auto arrayAccessExpr = dynamic_cast<ArrayAccessExpr *>(lhs.get()))
+        {
+            llvm::Value *arrayPtr = arrayAccessExpr->arrayExpr->codegen(cc);
+            llvm::Value *index = arrayAccessExpr->indexExpr->codegen(cc);
+
+            llvm::Value *elementPtr = cc.getBuilder().CreateGEP(arrayPtr->getType()->getPointerElementType(),
+                                                                arrayPtr,
+                                                                {cc.getBuilder().getInt32(0), index},
+                                                                "assignelementptr");
+
+            // Ensure the types match before storing
+            if (elementPtr->getType()->getPointerElementType() != value->getType())
+            {
+                value = cc.getBuilder().CreateBitCast(value, elementPtr->getType()->getPointerElementType(), "typecast");
+            }
+
+            cc.getBuilder().CreateStore(value, elementPtr);
+        }
+        else
+        {
+            throw std::runtime_error("Invalid left-hand side in assignment");
+        }
 
         return value;
     }

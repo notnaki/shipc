@@ -22,9 +22,14 @@ void CompilerContext::setupExternalFunctions()
 
     module.getOrInsertFunction("strcmp",
                                llvm::FunctionType::get(
-                                   builder.getInt32Ty(),                             // return type
-                                   {builder.getInt8PtrTy(), builder.getInt8PtrTy()}, // parameter types
+                                   builder.getInt32Ty(),
                                    false));
+
+    module.getOrInsertFunction("snprintf",
+                               llvm::FunctionType::get(
+                                   llvm::Type::getInt32Ty(context),
+                                   {llvm::Type::getInt8PtrTy(context), llvm::Type::getInt64Ty(context), llvm::Type::getInt8PtrTy(context)},
+                                   true));
 }
 
 void CompilerContext::setTable(ContextTable t)

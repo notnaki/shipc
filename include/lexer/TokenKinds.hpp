@@ -77,6 +77,8 @@ enum class TokenKind
     RETURN,
     BREAK,
 
+    FORMAT_INDICATOR,
+    FORMAT_END,
 };
 
 #endif

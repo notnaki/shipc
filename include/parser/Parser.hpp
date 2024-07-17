@@ -40,6 +40,7 @@
 #include "ast/expressions/FloatExpr.hpp"
 #include "ast/expressions/DoubleExpr.hpp"
 #include "ast/expressions/StringExpr.hpp"
+#include "ast/expressions/FStringExpr.hpp"
 #include "ast/expressions/CallExpr.hpp"
 #include "ast/expressions/AssignmentExpr.hpp"
 
@@ -93,6 +94,7 @@ private:
     std::unique_ptr<Expression> parse_float_expr();
     std::unique_ptr<Expression> parse_double_expr();
     std::unique_ptr<Expression> parse_string_expr();
+    std::unique_ptr<Expression> parse_fstring_expr();
     std::unique_ptr<Expression> parse_bool_expr();
     std::unique_ptr<Expression> parse_symbol_expr();
     std::unique_ptr<Expression> parse_ptr_expr();

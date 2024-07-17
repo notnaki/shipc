@@ -50,6 +50,20 @@ std::unique_ptr<Expression> Parser::parse_string_expr()
     return std::make_unique<StringExpr>(advance().value);
 }
 
+std::unique_ptr<Expression> Parser::parse_fstring_expr()
+{
+    std::vector<std::unique_ptr<Expression>> parts;
+    expect(TokenKind::FORMAT_INDICATOR);
+
+    while (currentTokenKind() != TokenKind::FORMAT_END)
+    {
+        parts.push_back(parse_expr(BindingPower::Logical));
+    }
+
+    expect(TokenKind::FORMAT_END);
+    return std::make_unique<FStringExpr>(std::move(parts));
+}
+
 std::unique_ptr<Expression> Parser::parse_symbol_expr()
 {
     return std::make_unique<SymbolExpr>(advance().value);

@@ -76,7 +76,81 @@ std::vector<Token> Lexer::tokenize()
                 ++end_pos;
             }
             std::string token_value = source.substr(pos, end_pos - pos);
-            if (reserved_words.count(token_value))
+
+            if (token_value == "f" && source[pos + 1] == '"')
+            {
+                ++pos;
+                if (source[pos] == '"')
+                {
+                    tokens.push_back(Token{TokenKind::FORMAT_INDICATOR, "f"});
+                    ++pos;
+
+                    std::string strPart;
+                    std::string exprPart;
+                    bool inExpression = false;
+
+                    while (pos < source.size() && source[pos] != '"')
+                    {
+                        if (source[pos] == '{')
+                        {
+                            if (!strPart.empty())
+                            {
+                                tokens.push_back(Token{TokenKind::STRING, strPart});
+                                strPart.clear();
+                            }
+                            inExpression = true;
+                            ++pos;
+                            continue;
+                        }
+                        else if (source[pos] == '}')
+                        {
+                            if (inExpression)
+                            {
+                                Lexer a(exprPart);
+                                auto tokenList = a.tokenize();
+
+                                for (auto it = tokenList.begin(); it != std::prev(tokenList.end()); ++it)
+                                {
+                                    tokens.push_back(*it);
+                                }
+
+                                exprPart.clear();
+                                inExpression = false;
+                            }
+                            ++pos;
+                            continue;
+                        }
+
+                        if (inExpression)
+                        {
+                            exprPart += source[pos];
+                        }
+                        else
+                        {
+                            strPart += source[pos];
+                        }
+
+                        ++pos;
+                    }
+
+                    if (!strPart.empty())
+                    {
+                        tokens.push_back(Token{TokenKind::STRING, strPart});
+                    }
+
+                    if (pos < source.size() && source[pos] == '"')
+                    {
+                        tokens.push_back(Token{TokenKind::FORMAT_END, ""});
+                        ++pos;
+                    }
+                    else
+                    {
+                        throw std::runtime_error("Lexer::Error -> Unterminated f-string near " + source.substr(pos));
+                    }
+                    continue;
+                }
+            }
+            else if (reserved_words.count(token_value))
             {
                 tokens.push_back({reserved_words.at(token_value), token_value});
             }

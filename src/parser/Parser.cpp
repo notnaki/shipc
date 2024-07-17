@@ -9,6 +9,7 @@ Program Parser::Parse()
         {TokenKind::TRUE, &Parser::parse_bool_expr},
         {TokenKind::FALSE, &Parser::parse_bool_expr},
         {TokenKind::STRING, &Parser::parse_string_expr},
+        {TokenKind::FORMAT_INDICATOR, &Parser::parse_fstring_expr},
         {TokenKind::IDENTIFIER, &Parser::parse_symbol_expr},
         {TokenKind::STAR, &Parser::parse_ptr_expr},
         {TokenKind::AND, &Parser::parse_ref_expr},

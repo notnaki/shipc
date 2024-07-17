@@ -113,6 +113,11 @@ std::string tokenKindToString(TokenKind kind)
     case TokenKind::BREAK:
         return "BREAK";
 
+    case TokenKind::FORMAT_INDICATOR:
+        return "FORMAT_INDICATOR";
+    case TokenKind::FORMAT_END:
+        return "FORMAT_END";
+
     default:
         return "UNKNOWN_TOKEN";
     }
@@ -123,6 +128,6 @@ void printTokens(std::vector<Token> tokens)
     std::cout << "Tokens:" << std::endl;
     for (const auto &token : tokens)
     {
-        std::cout << tokenKindToString(token.kind) << std::endl;
+        std::cout << tokenKindToString(token.kind) << token.value << std::endl;
     }
 }

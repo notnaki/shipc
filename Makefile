@@ -20,7 +20,10 @@ build/%.o: src/%.cpp
 run: $(TARGET)
 	./$(TARGET)
 
-clean:
+clean-all:
 	rm -rf build
+
+clean:
+	rm -rf build/parser
 
 .PHONY: all build clean run

@@ -35,7 +35,24 @@ public:
             // Ensure the types match before storing
             if (elementPtr->getType()->getPointerElementType() != value->getType())
             {
-                value = cc.getBuilder().CreateBitCast(value, elementPtr->getType()->getPointerElementType(), "typecast");
+                throw std::runtime_error("Array is of a different type than it's element is trying to be assigned.");
+                // value = cc.getBuilder().CreateBitCast(value, elementPtr->getType()->getPointerElementType(), "typecast");
+            }
+
+            cc.getBuilder().CreateStore(value, elementPtr);
+        }
+        else if (auto memberAccessExpr = dynamic_cast<MemberAccessExpr *>(lhs.get()))
+        {
+            llvm::Value *structPtr = memberAccessExpr->structExpr->codegen(cc);
+            llvm::Type *structType = structPtr->getType()->getPointerElementType();
+            unsigned idx = cc.getTable().getStructMemberIdx(structType->getStructName().str(), memberAccessExpr->member);
+
+            llvm::Value *elementPtr = cc.getBuilder().CreateStructGEP(structType, structPtr, idx);
+
+            if (elementPtr->getType()->getPointerElementType() != value->getType())
+            {
+                throw std::runtime_error("Member: " + memberAccessExpr->member + "is of a different type than it is trying to be assigned.");
+                // value = cc.getBuilder().CreateBitCast(value, elementPtr->getType()->getPointerElementType(), "typecast");
             }
 
             cc.getBuilder().CreateStore(value, elementPtr);

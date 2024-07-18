@@ -4,6 +4,9 @@
 #    Height: int;
 #}
 #
+# support member expr in assignment
+# support non full array expressions and stuff
+
 fn main() void {
 
     let x:string = f"{true} | {false}";

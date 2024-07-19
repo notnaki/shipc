@@ -8,7 +8,6 @@
 #include <unordered_map>
 
 #include "Tokens.hpp"
-#include "TokenKinds.hpp"
 
 class Lexer
 {

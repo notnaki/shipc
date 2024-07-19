@@ -21,7 +21,7 @@ void Shipc::exec()
 std::string Shipc::replace_escape_sequences(const std::string &input)
 {
     std::string result;
-    result.reserve(input.size()); // Reserve space to avoid reallocations
+    result.reserve(input.size());
 
     for (size_t i = 0; i < input.size(); ++i)
     {

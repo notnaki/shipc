@@ -1,4 +1,5 @@
 #include "lexer/Lexer.hpp"
+#include "lexer/TokenKinds.hpp"
 
 std::string Lexer::remainder()
 {

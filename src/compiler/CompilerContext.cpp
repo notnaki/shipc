@@ -1,4 +1,5 @@
 #include "compiler/CompilerContext.hpp"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
 
 llvm::LLVMContext &CompilerContext::getContext() { return context; }
 llvm::Module &CompilerContext::getModule() { return module; }
@@ -6,6 +7,15 @@ llvm::IRBuilder<> &CompilerContext::getBuilder() { return builder; }
 ContextTable &CompilerContext::getTable() { return contextTable; }
 void CompilerContext::save(std::string filename)
 {
+    llvm::legacy::PassManager pm;
+
+    pm.add(llvm::createInstructionCombiningPass());
+    pm.add(llvm::createReassociatePass());
+    pm.add(llvm::createGVNPass());
+    pm.add(llvm::createCFGSimplificationPass());
+
+    pm.run(module);
+
     std::error_code errorCode;
     llvm::raw_fd_ostream outLL(filename, errorCode);
     module.print(outLL, nullptr);

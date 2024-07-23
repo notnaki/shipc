@@ -14,7 +14,7 @@ Program Parser::Parse()
         {TokenKind::STAR, &Parser::parse_ptr_expr},
         {TokenKind::AND, &Parser::parse_ref_expr},
         {TokenKind::NEW, &Parser::parse_struct_expr},
-        {TokenKind::OPEN_CURLY, &Parser::parse_array_expr},
+        {TokenKind::OPEN_BRACKET, &Parser::parse_array_expr},
         {TokenKind::OPEN_PAREN, &Parser::parse_grouping_expr},
 
     };

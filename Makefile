@@ -18,7 +18,7 @@ build/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET)
+	./$(TARGET) examples/hello_world.sp
 
 clean-all:
 	rm -rf build

@@ -1,4 +1,5 @@
 #include "parser/Parser.hpp"
+#include "llvm/IR/Type.h"
 
 std::unique_ptr<Expression> Parser::parse_expr(BindingPower bp)
 {
@@ -178,6 +179,9 @@ std::unique_ptr<Expression> Parser::parse_member_access_expr(std::unique_ptr<Exp
 
 std::unique_ptr<Expression> Parser::parse_array_expr()
 {
+    llvm::Type *arrayType = parse_type();
+
+
     expect(TokenKind::OPEN_CURLY); // eat {
 
     std::vector<std::unique_ptr<Expression>> elements;
@@ -190,10 +194,6 @@ std::unique_ptr<Expression> Parser::parse_array_expr()
             throw std::runtime_error("Failed to parse expression in array initializer.");
         }
 
-        // if (auto symbolExpr = dynamic_cast<SymbolExpr *>(e.get()))
-        // {
-
-        // }
         elements.push_back(std::move(e));
 
         if (currentTokenKind() == TokenKind::COMMA)
@@ -213,7 +213,7 @@ std::unique_ptr<Expression> Parser::parse_array_expr()
         throw std::runtime_error("Array cannot be empty.");
     }
 
-    return std::make_unique<ArrayExpr>(std::move(elements));
+    return std::make_unique<ArrayExpr>(std::move(elements), arrayType->getPointerElementType());
 }
 
 std::unique_ptr<Expression> Parser::parse_array_access_expr(std::unique_ptr<Expression> arrayExpr)

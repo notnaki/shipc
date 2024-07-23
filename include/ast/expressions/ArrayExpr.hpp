@@ -6,15 +6,18 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/Support/raw_ostream.h"
+#include <cstddef>
 
 class ArrayExpr : public Expression
 {
 private:
     std::vector<std::unique_ptr<Expression>> elements;
+    llvm::Type* arrayType;
 
 public:
-    ArrayExpr(std::vector<std::unique_ptr<Expression>> arrayElements)
-        : elements(std::move(arrayElements)) {}
+    ArrayExpr(std::vector<std::unique_ptr<Expression>> arrayElements,llvm::Type* type)
+        : elements(std::move(arrayElements)) , arrayType(type) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
@@ -33,8 +36,14 @@ public:
             elementValues.push_back(elementValue);
         }
 
-        llvm::ArrayType *arrayType = llvm::ArrayType::get(elementValues[0]->getType(), elementValues.size());
 
+
+
+
+
+
+
+        llvm::Type *elementType = arrayType->getArrayElementType();
         llvm::AllocaInst *arrayPtr = builder.CreateAlloca(arrayType, nullptr, "array");
 
         for (size_t i = 0; i < elementValues.size(); ++i)
@@ -42,6 +51,10 @@ public:
             llvm::Value *index = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), i);
             llvm::Value *elementPtr = builder.CreateGEP(arrayPtr->getAllocatedType(), arrayPtr, {builder.getInt32(0), index}, "elementptr");
             builder.CreateStore(elementValues[i], elementPtr);
+        }
+
+        for (size_t i = elementValues.size(); i < arrayType->getArrayNumElements(); ++i){
+            elementValues.push_back(llvm::Constant::getNullValue(elementType));
         }
 
         // Load the array pointer before returning

@@ -15,7 +15,10 @@ void Shipc::exec()
 
     ast.codegen(cc);
 
-    cc.save("out.ll");
+    // debugging purposes
+    cc.emitIR("out.ll");
+    // create the object file
+    cc.createObjectFile("out.o");
 }
 
 std::string Shipc::replace_escape_sequences(const std::string &input)

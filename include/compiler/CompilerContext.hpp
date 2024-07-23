@@ -11,6 +11,12 @@
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Host.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/MC/TargetRegistry.h>
 
 #include "ContextTable.hpp"
 
@@ -41,7 +47,8 @@ public:
     void setTable(ContextTable t);
 
     void setupExternalFunctions();
-    void save(std::string filename);
+    void emitIR(std::string filename);
+    void createObjectFile(std::string filename);
 
     llvm::Constant *getTrueStrConst();
     llvm::Constant *getFalseStrConst();

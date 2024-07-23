@@ -2,6 +2,7 @@
 #define MEMBERACCESSEXPR_HPP
 
 #include "Expression.hpp"
+#include <stdexcept>
 
 class MemberAccessExpr : public Expression
 {
@@ -19,8 +20,31 @@ public:
 
         llvm::Value *structValue = structExpr->codegen(cc);
 
-        unsigned idx = cc.getTable().getStructMemberIdx(structValue->getType()->getPointerElementType()->getStructName().str(), member);
-        llvm::Value *memberValue = cc.getBuilder().CreateStructGEP(structValue->getType()->getPointerElementType(), structValue, idx); // Replace 0 with the actual index of the member
+        //check if struct type exists and if its a pointer
+
+        if (!structValue)
+        {
+            throw std::runtime_error("Error: Struct value is null");
+        }
+
+        if (!structValue->getType()->isPointerTy())
+        {
+            throw std::runtime_error("Error: Trying to access member of non-pointer type");
+        }
+
+        // check if the struct is a struct type
+
+
+        structType = structValue->getType()->getPointerElementType();
+
+        if (!structType->isStructTy())
+        {
+            throw std::runtime_error("Error: Member access can only be performed on references to structs");
+        }
+
+
+        unsigned idx = cc.getTable().getStructMemberIdx(structType->getStructName().str(), member);
+        llvm::Value *memberValue = cc.getBuilder().CreateStructGEP(structType, structValue, idx); // Replace 0 with the actual index of the member
 
         llvm::Value *loadedMember = cc.getBuilder().CreateLoad(memberValue->getType()->getPointerElementType(), memberValue);
 

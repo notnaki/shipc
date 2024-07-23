@@ -3,26 +3,28 @@
 
 #include <llvm/IR/Type.h>
 #include <llvm/IR/ValueSymbolTable.h>
+#include <memory>
 #include "Expression.hpp"
 
 class PtrExpr : public Expression
 {
 public:
-    std::string name;
+    std::unique_ptr<Expression> expr;
 
-    PtrExpr(std::string n) : name(n) {}
+    PtrExpr(std::unique_ptr<Expression> e) : expr(std::move(e)) {}
 
     llvm::Value *codegen(CompilerContext &cc) const override
     {
         llvm::Function *currentFunction = cc.getBuilder().GetInsertBlock()->getParent();
 
-        if (!currentFunction->getValueSymbolTable()->lookup(name))
-        {
-            printf("Error: Variable '%s' is not found in scope.\n", name.c_str());
-            throw std::runtime_error("Variable not found in scope: " + name);
-        }
 
-        llvm::Value *value = cc.getTable().getVariable(name);
+
+        llvm::Value *value = expr->codegen(cc);
+        //check if the value is a pointer type
+        if (!value->getType()->isPointerTy())
+        {
+            throw std::runtime_error("Error: trying to dereference a non-pointer type");
+        }
         llvm::Value *var = cc.getBuilder().CreateLoad(value->getType()->getPointerElementType(), value);
 
         return var;

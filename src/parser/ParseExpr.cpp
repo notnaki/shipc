@@ -84,7 +84,7 @@ std::unique_ptr<Expression> Parser::parse_ref_expr()
 std::unique_ptr<Expression> Parser::parse_ptr_expr()
 {
     expect(TokenKind::STAR);
-    return std::make_unique<PtrExpr>(advance().value);
+    return std::make_unique<PtrExpr>(std::move(parse_expr(BindingPower::Unary)));
 }
 
 std::unique_ptr<Expression> Parser::parse_grouping_expr()
@@ -208,10 +208,6 @@ std::unique_ptr<Expression> Parser::parse_array_expr()
 
     expect(TokenKind::CLOSE_CURLY); // eat }
 
-    if (elements.empty())
-    {
-        throw std::runtime_error("Array cannot be empty.");
-    }
 
     return std::make_unique<ArrayExpr>(std::move(elements), arrayType->getPointerElementType());
 }
@@ -221,7 +217,7 @@ std::unique_ptr<Expression> Parser::parse_array_access_expr(std::unique_ptr<Expr
     std::unique_ptr<Expression> index;
 
     expect(TokenKind::OPEN_BRACKET);           // eat [
-    index = parse_expr(BindingPower::Primary); // Parse index expression
+    index = parse_expr(BindingPower::Relational); // Parse index expression
     expect(TokenKind::CLOSE_BRACKET);          // eat ]
 
     return std::make_unique<ArrayAccessExpr>(std::move(arrayExpr), std::move(index));

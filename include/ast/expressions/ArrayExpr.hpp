@@ -6,7 +6,6 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
-#include "llvm/Support/raw_ostream.h"
 #include <cstddef>
 
 class ArrayExpr : public Expression
@@ -35,13 +34,6 @@ public:
 
             elementValues.push_back(elementValue);
         }
-
-
-
-
-
-
-
 
         llvm::Type *elementType = arrayType->getArrayElementType();
         llvm::AllocaInst *arrayPtr = builder.CreateAlloca(arrayType, nullptr, "array");

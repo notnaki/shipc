@@ -1,4 +1,7 @@
+#include "lexer/TokenKinds.hpp"
 #include "parser/Parser.hpp"
+#include <memory>
+#include <vector>
 
 std::unique_ptr<Statement> Parser::parse_stmt()
 {
@@ -24,6 +27,9 @@ std::unique_ptr<Statement> Parser::parse_stmt()
 
     case TokenKind::FOR:
         return parse_for_stmt();
+
+    case TokenKind::IMPL:
+        return parse_impl_stmt();
 
     default:
         return parse_expr_stmt();
@@ -80,6 +86,24 @@ std::unique_ptr<Statement> Parser::parse_fn_decl_stmt()
     auto funcDecl = std::make_unique<FuncDeclStmt>(name, params, returnType, std::move(body));
 
     return funcDecl;
+}
+
+std::unique_ptr<Statement> Parser::parse_impl_stmt(){
+    expect(TokenKind::IMPL);
+    std::string structName = expect(TokenKind::IDENTIFIER).value;
+    std::vector<std::unique_ptr<Statement>> func_list;
+
+    expect(TokenKind::OPEN_CURLY);
+
+    while (currentTokenKind() != TokenKind::CLOSE_CURLY && hasTokens())
+    {
+        func_list.push_back(std::move(parse_stmt()));
+    }
+
+    expect(TokenKind::CLOSE_CURLY);
+
+
+    return std::make_unique<ImplStmt>(structName, std::move(func_list));
 }
 
 std::unique_ptr<Statement> Parser::parse_return_stmt()

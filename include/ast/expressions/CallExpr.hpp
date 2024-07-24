@@ -7,6 +7,8 @@
 #include <llvm/ADT/iterator_range.h>
 
 #include "Expression.hpp"
+#include "SymbolExpr.hpp"
+#include "ast/expressions/MemberAccessExpr.hpp"
 
 class CallExpr : public Expression
 {
@@ -26,6 +28,22 @@ public:
         if (auto symbolExpr = dynamic_cast<SymbolExpr *>(function.get()))
         {
             fnName = symbolExpr->name;
+        }
+
+        if (auto memberExpr = dynamic_cast<MemberAccessExpr*>(function.get())){
+            llvm::Value* structExpr = memberExpr->structExpr->codegen(cc);
+            llvm::Type *structType = structExpr->getType();
+
+            if (!structType->isPointerTy()){
+                throw std::runtime_error("Struct method call on non-pointer type");
+            }
+
+            if (!structType->getPointerElementType()->isStructTy()){
+                throw std::runtime_error("Struct method call on non-struct pointer type");
+            }
+
+            fnName = structType->getPointerElementType()->getStructName().str() + "."+ memberExpr->member;
+            arguments.push_back(structExpr);
         }
 
         auto fn = cc.getModule().getFunction(fnName);

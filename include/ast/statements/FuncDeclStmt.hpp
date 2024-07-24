@@ -30,7 +30,7 @@ public:
 
     void setStructName(std::string name)
     {
-        structName = name;
+        structName = name + ".";
     }
 
     void codegen(CompilerContext &cc) const override

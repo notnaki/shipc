@@ -1,4 +1,5 @@
 #include "compiler/CompilerContext.hpp"
+#include "compiler/ContextTable.hpp"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"

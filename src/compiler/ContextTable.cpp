@@ -108,3 +108,39 @@ void ContextTable::setParent(ContextTable *p)
 {
     parent = p;
 }
+
+
+void ContextTable::addWatch(std::string name, std::string watchFunctionName) {
+    watchedVariables[name] = watchFunctionName;
+}
+
+std::string ContextTable::getWatch(std::string name)  {
+    ContextTable *existsTable = resolveWatch(name);
+
+    if (existsTable == nullptr)
+    {
+        return "";
+    }
+    else
+    {
+        return existsTable->watchedVariables[name];
+    }
+}
+
+bool ContextTable::containsWatch(const std::string &name) const
+{
+    return watchedVariables.find(name) != watchedVariables.end();
+}
+
+ContextTable *ContextTable::resolveWatch(const std::string &name)
+{
+    if (containsWatch(name))
+    {
+        return this;
+    }
+    else if (parent)
+    {
+        return parent->resolveWatch(name);
+    }
+    return nullptr;
+}

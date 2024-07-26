@@ -1,4 +1,5 @@
 #include "lexer/Tokens.hpp"
+#include "lexer/TokenKinds.hpp"
 
 const std::unordered_map<std::string, TokenKind> reserved_words{
     {"let", TokenKind::LET},
@@ -19,4 +20,5 @@ const std::unordered_map<std::string, TokenKind> reserved_words{
     {"break", TokenKind::BREAK},
     {"true", TokenKind::TRUE},
     {"false", TokenKind::FALSE},
+    {"watch", TokenKind::WATCH}
 };

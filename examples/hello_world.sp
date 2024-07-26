@@ -18,11 +18,18 @@ impl Person {
     }
 }
 
+fn xWatch(x:int) void {
+    printf(f"x: {x}\n");
+}
 
 
 fn main() void {
     let p:&Person = new Person {"John",  42 };
     p.printAge();
 
-
+    let x:int = 0;
+    watch<x>(xWatch);
+    for (let i:int = 0; i < 10; i = i+1;) {
+        x = i;
+    }
 }

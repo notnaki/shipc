@@ -15,6 +15,8 @@ private:
 
     std::unordered_map<std::string, llvm::Value *> variables;
 
+    std::unordered_map<std::string, std::string> watchedVariables;
+
     std::unordered_map<std::string, llvm::Type *> structTypes;
     std::unordered_map<std::string, std::unordered_map<std::string, unsigned>> structMemberMap;
 
@@ -22,6 +24,8 @@ private:
     ContextTable *resolveVariable(const std::string &name);
     ContextTable *resolveStructType(const std::string &name);
 
+    bool containsWatch(const std::string &name) const;
+    ContextTable *resolveWatch(const std::string &name);
 
 public:
     ContextTable() : parent(nullptr) {}
@@ -37,6 +41,9 @@ public:
 
     void addStructMemberMap(std::string structName, std::unordered_map<std::string, unsigned> memberMap);
     unsigned getStructMemberIdx(std::string structName, std::string memberName);
+
+    void addWatch(std::string name, std::string watchFunctionName);
+    std::string getWatch(std::string name);
 };
 
 #endif

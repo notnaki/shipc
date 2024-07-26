@@ -1,3 +1,4 @@
+#include "ast/statements/Statement.hpp"
 #include "lexer/TokenKinds.hpp"
 #include "parser/Parser.hpp"
 #include <memory>
@@ -30,6 +31,9 @@ std::unique_ptr<Statement> Parser::parse_stmt()
 
     case TokenKind::IMPL:
         return parse_impl_stmt();
+
+    case TokenKind::WATCH:
+        return parse_watch_stmt();
 
     default:
         return parse_expr_stmt();
@@ -86,6 +90,31 @@ std::unique_ptr<Statement> Parser::parse_fn_decl_stmt()
     auto funcDecl = std::make_unique<FuncDeclStmt>(name, params, returnType, std::move(body));
 
     return funcDecl;
+}
+
+std::unique_ptr<Statement> Parser::parse_watch_stmt()
+{
+    expect(TokenKind::WATCH);
+
+    expect(TokenKind::LESS);
+
+    std::string name = expect(TokenKind::IDENTIFIER).value;
+
+    expect(TokenKind::GREATER);
+
+    expect(TokenKind::OPEN_PAREN);
+
+    std::string fnName = expect(TokenKind::IDENTIFIER).value;
+
+    expect(TokenKind::CLOSE_PAREN);
+
+
+
+    auto watchStmt = std::make_unique<WatchStmt>(name, fnName);
+
+    expect(TokenKind::SEMI_COLON);
+
+    return watchStmt;
 }
 
 std::unique_ptr<Statement> Parser::parse_impl_stmt(){

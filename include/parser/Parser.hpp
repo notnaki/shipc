@@ -25,7 +25,7 @@
 #include "ast/statements/WhileStmt.hpp"
 #include "ast/statements/ForStmt.hpp"
 #include "ast/statements/ImplStmt.hpp"
-
+#include "ast/statements/WatchStmt.hpp"
 
 
 #include "ast/expressions/ComparisonExpr.hpp"
@@ -88,6 +88,7 @@ private:
     std::unique_ptr<Statement> parse_while_stmt();
     std::unique_ptr<Statement> parse_for_stmt();
     std::unique_ptr<Statement> parse_impl_stmt();
+    std::unique_ptr<Statement> parse_watch_stmt();
 
     std::vector<std::pair<std::string, llvm::Type *>> parse_fn_params();
 

@@ -4,6 +4,9 @@
 #include <llvm/IR/Type.h>
 #include <llvm/IR/ValueSymbolTable.h>
 #include "Expression.hpp"
+#include "SymbolExpr.hpp"
+#include "ArrayAccessExpr.hpp"
+#include "MemberAccessExpr.hpp"
 
 class AssignmentExpr : public Expression
 {
@@ -21,6 +24,10 @@ public:
         {
             llvm::Value *var = cc.getTable().getVariable(symbolExpr->name);
             cc.getBuilder().CreateStore(value, var);
+            if (cc.getTable().getWatch(symbolExpr->name) != ""){
+                auto func = cc.getModule().getFunction(cc.getTable().getWatch(symbolExpr->name));
+                cc.getBuilder().CreateCall(func, {value});
+            }
         }
         else if (auto arrayAccessExpr = dynamic_cast<ArrayAccessExpr *>(lhs.get()))
         {

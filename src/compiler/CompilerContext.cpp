@@ -145,8 +145,6 @@ bool CompilerContext::isFunctionCallable(std::string name){
         size_t pos = it->first.find('.');
         auto thing = (pos != std::string::npos) ? it->first.substr(0, pos) : "";
 
-
-        std::cout << "scopeName: " << scopeName << " thing: " << thing << std::endl;
         return scopeName == thing;
     }
     return true;

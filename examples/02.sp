@@ -11,7 +11,7 @@ fn main() void {
     printf(f"{p.Name}\n");
 
 
-    let i:[2]int = {1,2};
+    let i:[2]int = [2]int{1,2};
     printf(f"{i[0]}\n");
     i[0] = 10;
     printf(f"{i[0]}\n");

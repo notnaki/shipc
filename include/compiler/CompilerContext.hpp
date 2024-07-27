@@ -32,6 +32,9 @@ private:
     llvm::Constant *trueStrConst = nullptr;
     llvm::Constant *falseStrConst = nullptr;
 
+    // <fn_name ,<private, value>>
+    std::unordered_map<std::string, std::pair<bool, llvm::Value *>> functions;
+
 public:
     CompilerContext(const std::string &moduleName) : module(moduleName, context), builder(context)
     {
@@ -52,6 +55,8 @@ public:
 
     llvm::Constant *getTrueStrConst();
     llvm::Constant *getFalseStrConst();
+
+    void addFunction(std::string name, llvm::Value *value, bool isPrivate);
 };
 
 #endif

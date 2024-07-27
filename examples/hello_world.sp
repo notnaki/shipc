@@ -5,11 +5,11 @@ struct Person {
 
 impl Person {
 
-    fn getName(self:&Person) string {
+    private fn getName(self:&Person) string {
         return self.name;
     }
 
-    fn getAge(self:&Person) int {
+    private fn getAge(self:&Person) int {
         return self.age;
     }
 
@@ -18,18 +18,11 @@ impl Person {
     }
 }
 
-fn xWatch(x:int) void {
-    printf(f"x: {x}\n");
-}
 
 
 fn main() void {
     let p:&Person = new Person {"John",  42 };
+    p.getAge();
     p.printAge();
 
-    let x:int = 0;
-    watch<x>(xWatch);
-    for (let i:int = 0; i < 10; i = i+1;) {
-        x = i;
-    }
 }

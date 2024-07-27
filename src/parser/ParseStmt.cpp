@@ -2,6 +2,7 @@
 #include "lexer/TokenKinds.hpp"
 #include "parser/Parser.hpp"
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 std::unique_ptr<Statement> Parser::parse_stmt()
@@ -9,6 +10,12 @@ std::unique_ptr<Statement> Parser::parse_stmt()
     switch (currentTokenKind())
     {
     case TokenKind::FN:
+        return parse_fn_decl_stmt();
+
+    case TokenKind::PRIVATE:
+        return parse_fn_decl_stmt();
+
+    case TokenKind::PUBLIC:
         return parse_fn_decl_stmt();
 
     case TokenKind::RETURN:
@@ -72,10 +79,27 @@ std::unique_ptr<Statement> Parser::parse_fn_decl_stmt()
     std::string name;
     std::vector<std::pair<std::string, llvm::Type *>> params;
     llvm::Type *returnType;
+    bool isPrivate;
+
+    // check for public/private keywords if public set isPrivate to false else set it to true
+
+    if (currentTokenKind() == TokenKind::PUBLIC){
+        isPrivate = false;
+        advance();
+    }else if (currentTokenKind() == TokenKind::PRIVATE){
+        isPrivate = true;
+        advance();
+    }else {
+        isPrivate = true;
+    }
 
     expect(TokenKind::FN);
 
     name = expect(TokenKind::IDENTIFIER).value;
+
+    if (name == "main" && isPrivate == false){
+        throw std::runtime_error("Main function can't be public.");
+    }
 
     expect(TokenKind::OPEN_PAREN);
 
@@ -87,7 +111,7 @@ std::unique_ptr<Statement> Parser::parse_fn_decl_stmt()
 
     auto body = parse_block_stmt();
 
-    auto funcDecl = std::make_unique<FuncDeclStmt>(name, params, returnType, std::move(body));
+    auto funcDecl = std::make_unique<FuncDeclStmt>(name, params, returnType, std::move(body), isPrivate);
 
     return funcDecl;
 }

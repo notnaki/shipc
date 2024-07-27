@@ -17,9 +17,11 @@ private:
     llvm::Type *returnType;
     std::unique_ptr<BlockStmt> body;
 
+    bool isPrivate;
+
 public:
-    FuncDeclStmt(const std::string &name, const std::vector<std::pair<std::string, llvm::Type *>> &params, llvm::Type *returnTy, std::unique_ptr<BlockStmt> bodyPtr)
-        : functionName(name), structName(""), parameters(params), returnType(returnTy), body(std::move(bodyPtr))
+    FuncDeclStmt(const std::string &name, const std::vector<std::pair<std::string, llvm::Type *>> &params, llvm::Type *returnTy, std::unique_ptr<BlockStmt> bodyPtr, bool isPriv)
+        : functionName(name), structName(""), parameters(params), returnType(returnTy), body(std::move(bodyPtr)), isPrivate(isPriv)
     {
     }
 
@@ -52,8 +54,8 @@ public:
 
         if (!body && !returnType->isVoidTy())
         {
-            llvm::errs() << "Error: Function '" << functionName << "' is missing a body.\n";
-            throw std::runtime_error("Function '" + functionName + "' is missing a body.");
+            llvm::errs() << "Error: Function '" << structName + functionName << "' is missing a body.\n";
+            throw std::runtime_error("Function '" + structName + functionName + "' is missing a body.");
         }
 
         llvm::BasicBlock *entryBB = llvm::BasicBlock::Create(cc.getContext(), "entry", func);
@@ -72,6 +74,7 @@ public:
         }
 
         llvm::verifyFunction(*func);
+        cc.addFunction(structName + functionName, func, isPrivate);
     }
 };
 

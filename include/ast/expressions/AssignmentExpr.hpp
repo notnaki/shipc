@@ -3,6 +3,7 @@
 
 #include <llvm/IR/Type.h>
 #include <llvm/IR/ValueSymbolTable.h>
+#include <stdexcept>
 #include "Expression.hpp"
 #include "SymbolExpr.hpp"
 #include "ArrayAccessExpr.hpp"
@@ -26,6 +27,12 @@ public:
             cc.getBuilder().CreateStore(value, var);
             if (cc.getTable().getWatch(symbolExpr->name) != ""){
                 auto func = cc.getModule().getFunction(cc.getTable().getWatch(symbolExpr->name));
+                if (func->getArg(0)->getType() != value->getType()){
+                    throw std::runtime_error("Watch function " + cc.getTable().getWatch(symbolExpr->name) + " takes a different type than the variable it is watching.");
+                }
+                if (func->arg_size() != 1 ){
+                    throw std::runtime_error("Watch function " + cc.getTable().getWatch(symbolExpr->name) + " expected to take a single argument. Got " + std::to_string(func->arg_size()) + " arguments instead");
+                }
                 cc.getBuilder().CreateCall(func, {value});
             }
         }

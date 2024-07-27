@@ -80,6 +80,8 @@ enum class TokenKind
     FORMAT_INDICATOR,
     FORMAT_END,
     WATCH,
+    PRIVATE,
+    PUBLIC,
 };
 
 #endif

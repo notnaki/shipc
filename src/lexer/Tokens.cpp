@@ -20,5 +20,7 @@ const std::unordered_map<std::string, TokenKind> reserved_words{
     {"break", TokenKind::BREAK},
     {"true", TokenKind::TRUE},
     {"false", TokenKind::FALSE},
-    {"watch", TokenKind::WATCH}
+    {"watch", TokenKind::WATCH},
+    {"private", TokenKind::PRIVATE},
+    {"public", TokenKind::PUBLIC},
 };

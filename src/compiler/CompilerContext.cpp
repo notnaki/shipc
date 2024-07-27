@@ -1,8 +1,10 @@
 #include "compiler/CompilerContext.hpp"
 #include "compiler/ContextTable.hpp"
+#include "llvm/IR/Value.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
+#include <utility>
 
 llvm::LLVMContext &CompilerContext::getContext() { return context; }
 llvm::Module &CompilerContext::getModule() { return module; }
@@ -73,8 +75,6 @@ void CompilerContext::createObjectFile(std::string filename){
     dest.flush();
 
     llvm::outs() << "Wrote " << filename << "\n";
-
-
 }
 
 void CompilerContext::setupExternalFunctions()
@@ -88,7 +88,7 @@ void CompilerContext::setupExternalFunctions()
 
     module.getOrInsertFunction("strcmp",
                                llvm::FunctionType::get(
-                                   builder.getInt32Ty(),
+                                   builder.getInt32Ty(),{bytePtrTy, bytePtrTy},
                                    false));
 
     module.getOrInsertFunction("snprintf",
@@ -119,4 +119,10 @@ llvm::Constant *CompilerContext::getFalseStrConst()
         falseStrConst = getBuilder().CreateGlobalStringPtr("false", "false.str");
     }
     return falseStrConst;
+}
+
+
+void CompilerContext::addFunction(std::string name, llvm::Value *value, bool isPrivate) {
+    auto pair = std::make_pair(isPrivate, value);
+    functions[name] = pair;
 }

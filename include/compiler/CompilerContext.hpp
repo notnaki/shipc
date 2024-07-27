@@ -34,6 +34,7 @@ private:
 
     // <fn_name ,<private, value>>
     std::unordered_map<std::string, std::pair<bool, llvm::Value *>> functions;
+    std::string scopeName;
 
 public:
     CompilerContext(const std::string &moduleName) : module(moduleName, context), builder(context)
@@ -57,6 +58,9 @@ public:
     llvm::Constant *getFalseStrConst();
 
     void addFunction(std::string name, llvm::Value *value, bool isPrivate);
+    bool isFunctionCallable(std::string name);
+    void setScopeName(std::string name);
+    void clearScopeName();
 };
 
 #endif

@@ -5,6 +5,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Argument.h>
 #include <llvm/ADT/iterator_range.h>
+#include <stdexcept>
 
 #include "Expression.hpp"
 #include "SymbolExpr.hpp"
@@ -44,6 +45,11 @@ public:
 
             fnName = structType->getPointerElementType()->getStructName().str() + "."+ memberExpr->member;
             arguments.push_back(structExpr);
+        }
+
+        if (!cc.isFunctionCallable(fnName)){
+
+            throw std::runtime_error("Function " + fnName + " is private and can only be called in the scope of its struct.");
         }
 
         auto fn = cc.getModule().getFunction(fnName);

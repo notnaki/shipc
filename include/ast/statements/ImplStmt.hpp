@@ -17,6 +17,7 @@ public:
 
     void codegen(CompilerContext &cc) const override
     {
+        cc.setScopeName(name);
         for (const auto &func : functions)
         {
             if (auto *f = dynamic_cast<FuncDeclStmt *>(func.get())){
@@ -28,6 +29,7 @@ public:
             }
             func->codegen(cc);
         }
+        cc.clearScopeName();
     }
 };
 

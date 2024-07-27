@@ -4,7 +4,9 @@
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/InstCombine/InstCombine.h"
+#include <stdexcept>
 #include <utility>
+#include <iostream>
 
 llvm::LLVMContext &CompilerContext::getContext() { return context; }
 llvm::Module &CompilerContext::getModule() { return module; }
@@ -80,22 +82,28 @@ void CompilerContext::createObjectFile(std::string filename){
 void CompilerContext::setupExternalFunctions()
 {
     auto bytePtrTy = builder.getInt8Ty()->getPointerTo();
-    module.getOrInsertFunction("printf",
+    auto printfFn = module.getOrInsertFunction("printf",
                                llvm::FunctionType::get(
                                    /*return type*/ builder.getInt32Ty(),
                                    /*format arg*/ bytePtrTy,
                                    /*vararg*/ true));
 
-    module.getOrInsertFunction("strcmp",
+    this->addFunction("printf", printfFn.getCallee(), false);
+
+    auto strcmpFn = module.getOrInsertFunction("strcmp",
                                llvm::FunctionType::get(
                                    builder.getInt32Ty(),{bytePtrTy, bytePtrTy},
                                    false));
 
-    module.getOrInsertFunction("snprintf",
+    this->addFunction("strcmp", strcmpFn.getCallee(), false);
+
+    auto snprintfFn = module.getOrInsertFunction("snprintf",
                                llvm::FunctionType::get(
                                    llvm::Type::getInt32Ty(context),
                                    {llvm::Type::getInt8PtrTy(context), llvm::Type::getInt64Ty(context), llvm::Type::getInt8PtrTy(context)},
                                    true));
+
+    this->addFunction("snprintf", snprintfFn.getCallee(), false);
 }
 
 void CompilerContext::setTable(ContextTable t)
@@ -125,4 +133,29 @@ llvm::Constant *CompilerContext::getFalseStrConst()
 void CompilerContext::addFunction(std::string name, llvm::Value *value, bool isPrivate) {
     auto pair = std::make_pair(isPrivate, value);
     functions[name] = pair;
+}
+
+bool CompilerContext::isFunctionCallable(std::string name){
+    // get the function from functions
+    auto it = functions.find(name);
+    if (it == functions.end()){
+        throw std::runtime_error("Function " + name + " not found");
+    }
+    if (it->second.first){
+        size_t pos = it->first.find('.');
+        auto thing = (pos != std::string::npos) ? it->first.substr(0, pos) : "";
+
+
+        std::cout << "scopeName: " << scopeName << " thing: " << thing << std::endl;
+        return scopeName == thing;
+    }
+    return true;
+}
+
+void CompilerContext::setScopeName(std::string name){
+    scopeName = name;
+}
+
+void CompilerContext::clearScopeName(){
+    scopeName = "";
 }

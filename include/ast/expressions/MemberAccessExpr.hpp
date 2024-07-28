@@ -42,8 +42,12 @@ public:
             throw std::runtime_error("Error: Member access can only be performed on references to structs");
         }
 
+        std::string structName = structType->getStructName().str();
+        if (cc.getTable().isStructMemberPrivate(structName, member) && cc.getScopeName() != structName){
+            throw std::runtime_error("Error: Member '"+member+"' is private and can only be accessed inside the scope of '"+ structName +"'.");
+        }
 
-        unsigned idx = cc.getTable().getStructMemberIdx(structType->getStructName().str(), member);
+        unsigned idx = cc.getTable().getStructMemberIdx(structName, member);
         llvm::Value *memberValue = cc.getBuilder().CreateStructGEP(structType, structValue, idx); // Replace 0 with the actual index of the member
 
         llvm::Value *loadedMember = cc.getBuilder().CreateLoad(memberValue->getType()->getPointerElementType(), memberValue);

@@ -157,3 +157,7 @@ void CompilerContext::setScopeName(std::string name){
 void CompilerContext::clearScopeName(){
     scopeName = "";
 }
+
+std::string CompilerContext::getScopeName(){
+    return scopeName;
+}

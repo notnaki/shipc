@@ -1,5 +1,6 @@
 #include "ast/statements/Statement.hpp"
 #include "lexer/TokenKinds.hpp"
+#include "lexer/Tokens.hpp"
 #include "parser/Parser.hpp"
 #include <memory>
 #include <stdexcept>
@@ -209,9 +210,20 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
     llvm::StructType *structType = llvm::StructType::create(cc.getContext(), structName);
     cc.getTable().addStructType(structName, structType);
 
+    std::unordered_map<std::string, bool> memberPrivacy;
+
     unsigned idx = 0;
     while (currentTokenKind() != TokenKind::CLOSE_CURLY && hasTokens())
     {
+        bool isPrivate = true;
+
+        if (currentTokenKind() == TokenKind::PRIVATE){
+            advance();
+        }else if (currentTokenKind() == TokenKind::PUBLIC){
+            isPrivate = false;
+            advance();
+        }
+
         std::string propName = expect(TokenKind::IDENTIFIER).value;
         expectError(TokenKind::COLON, "Expected to find colon following property name inside struct declaration");
 
@@ -225,6 +237,7 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
         }
 
         memberTypes.push_back(propType);
+        memberPrivacy[propName] = isPrivate;
         props[propName] = propType;
         memberMap[propName] = idx;
         ++idx;
@@ -235,6 +248,7 @@ std::unique_ptr<Statement> Parser::parse_struct_decl_stmt()
 
     cc.getTable().addStructType(structName, structType);
     cc.getTable().addStructMemberMap(structName, memberMap);
+    cc.getTable().addStructMemberPrivacy(structName, memberPrivacy);
 
     auto structDeclStmt = std::make_unique<StructDeclStmt>();
 

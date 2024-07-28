@@ -144,3 +144,26 @@ ContextTable *ContextTable::resolveWatch(const std::string &name)
     }
     return nullptr;
 }
+
+void ContextTable::addStructMemberPrivacy(std::string structName, std::unordered_map<std::string, bool> memberPrivacy){
+    structMemberPrivacy[structName] = memberPrivacy;
+}
+
+bool ContextTable::isStructMemberPrivate(std::string structName, std::string memberName){
+    ContextTable *existsTable = resolveStructType(structName);
+
+    if (existsTable == nullptr)
+    {
+        throw std::runtime_error("Struct '" + structName + "' not found in scope.");
+    }
+
+    const std::unordered_map<std::string, bool> &structDef = existsTable->structMemberPrivacy[structName];
+
+    auto memberIt = structDef.find(memberName);
+    if (memberIt == structDef.end())
+    {
+        throw std::runtime_error("Member '" + memberName + "' not found for struct '" + structName + "'");
+    }
+
+    return memberIt->second;
+}

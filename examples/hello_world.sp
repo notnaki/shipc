@@ -5,7 +5,7 @@ struct Person {
 
 impl Person {
 
-    fn getName(self:&Person) string {
+    public fn getName(self:&Person) string {
         return self.name;
     }
 
@@ -22,5 +22,6 @@ impl Person {
 fn main() void {
     let p:&Person = new Person {"John",  42 };
     p.printAge();
+    printf(f"Name: {p.getName()}\n");
 
 }

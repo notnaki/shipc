@@ -60,6 +60,7 @@ public:
     void addFunction(std::string name, llvm::Value *value, bool isPrivate);
     bool isFunctionCallable(std::string name);
     void setScopeName(std::string name);
+    std::string getScopeName();
     void clearScopeName();
 };
 
